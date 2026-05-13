@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Cloud Readiness Assessment</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;--text:#1e2a3b;--muted:#6b7280;--border:#e5e7eb;--blue:#1a56db;--blue-dk:#1e429f;--blue-lt:#ebf5ff;--nav:#1e2a3b;--shadow:rgba(0,0,0,.07)}
+[data-theme="dark"]{--bg:#0f172a;--surface:#1e293b;--surface2:#0f172a;--text:#e2e8f0;--muted:#94a3b8;--border:#334155;--blue:#60a5fa;--blue-dk:#93c5fd;--blue-lt:rgba(96,165,250,.12);--nav:#0f172a;--shadow:rgba(0,0,0,.3)}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.65}
+nav{background:var(--nav);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.nav-brand{color:#fff;font-weight:700;font-size:.95rem}
+.nav-brand span{color:#60a5fa}
+.nav-back{color:#cbd5e1;text-decoration:none;font-size:.85rem}
+.nav-back:hover{color:#fff}
+#darkToggle{background:none;border:none;cursor:pointer;color:#e2e8f0;font-size:1.1rem;padding:.25rem .5rem}
+
+.hero{background:linear-gradient(135deg,#0f172a,#1e3a5f,#1a56db);color:#fff;text-align:center;padding:3.5rem 1.5rem 3rem}
+.hero h1{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;margin-bottom:.6rem}
+.hero p{color:#93c5fd;font-size:.95rem;max-width:560px;margin:0 auto}
+
+.wrap{max-width:820px;margin:0 auto;padding:3rem 1.5rem}
+
+.progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem}
+.progress-header span{font-size:.85rem;color:var(--muted)}
+.progress-header strong{font-size:.9rem;color:var(--blue)}
+.prog-bar-bg{background:var(--border);border-radius:999px;height:8px;overflow:hidden;margin-bottom:2rem}
+.prog-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#1a56db,#22c55e);transition:width .4s ease;width:0%}
+
+.category{margin-bottom:2.5rem}
+.cat-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:1rem;display:flex;align-items:center;gap:.6rem}
+.cat-icon{width:32px;height:32px;border-radius:8px;background:var(--blue-lt);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:.95rem}
+
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:.8rem;box-shadow:0 1px 3px var(--shadow)}
+.q-text{font-size:.9rem;font-weight:500;margin-bottom:.9rem}
+.q-options{display:flex;gap:.6rem;flex-wrap:wrap}
+.q-opt{padding:.4rem 1rem;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:.82rem;cursor:pointer;transition:all .2s}
+.q-opt:hover{border-color:var(--blue);color:var(--blue)}
+.q-opt.selected-yes{background:#dcfce7;border-color:#16a34a;color:#15803d}
+.q-opt.selected-partial{background:#fef9c3;border-color:#ca8a04;color:#a16207}
+.q-opt.selected-no{background:#fee2e2;border-color:#dc2626;color:#b91c1c}
+
+.result-wrap{display:none;text-align:center;padding:2.5rem 2rem;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 2px 8px var(--shadow)}
+.score-ring-wrap{position:relative;width:160px;height:160px;margin:0 auto 1.5rem}
+.score-ring-wrap svg{transform:rotate(-90deg)}
+.score-circle-bg{fill:none;stroke:var(--border);stroke-width:12}
+.score-circle-fill{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset 1s ease}
+.score-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.score-num{font-size:2.2rem;font-weight:800;color:var(--blue)}
+.score-label{font-size:.75rem;color:var(--muted)}
+.result-title{font-size:1.3rem;font-weight:800;margin-bottom:.5rem}
+.result-desc{font-size:.9rem;color:var(--muted);max-width:500px;margin:0 auto 1.5rem}
+.result-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.7rem;margin-top:1.5rem;text-align:left}
+.breakdown-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:.8rem}
+.breakdown-item .b-label{font-size:.72rem;color:var(--muted);margin-bottom:.3rem}
+.breakdown-item .b-score{font-size:1.1rem;font-weight:700;color:var(--blue)}
+.breakdown-item .b-bar{height:4px;border-radius:999px;background:var(--border);margin-top:.4rem;overflow:hidden}
+.breakdown-item .b-fill{height:100%;border-radius:999px;background:var(--blue)}
+
+.btn-primary{display:inline-block;background:var(--blue);color:#fff;border:none;padding:.75rem 2rem;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:1rem}
+.btn-primary:hover{opacity:.88}
+.btn-outline{display:inline-block;background:transparent;color:var(--blue);border:1.5px solid var(--blue);padding:.65rem 1.6rem;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:1rem;margin-left:.8rem;text-decoration:none}
+.btn-outline:hover{background:var(--blue-lt)}
+
+footer{background:var(--nav);color:#94a3b8;text-align:center;padding:1.5rem;font-size:.82rem;margin-top:2rem}
+footer a{color:#60a5fa;text-decoration:none}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand">☁️ <span>Cloud Readiness</span> Assessment</div>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <a href="index.html" class="nav-back">← Back to Overview</a>
+    <button id="darkToggle">🌙</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>☑ Cloud Readiness Assessment</h1>
+  <p>Answer 20 questions across 5 categories to receive your organization's cloud readiness score and tailored recommendations.</p>
+</div>
+
+<div class="wrap">
+  <div class="progress-header">
+    <span id="progressLabel">Question 0 of 20 answered</span>
+    <strong id="progressPct">0%</strong>
+  </div>
+  <div class="prog-bar-bg"><div class="prog-bar-fill" id="progFill"></div></div>
+
+  <!-- CATEGORY 1 -->
+  <div class="category">
+    <div class="cat-title"><div class="cat-icon">🏗️</div>Technical Infrastructure</div>
+    <div class="q-card"><div class="q-text">1. Does your organization have documented inventory of all servers, applications, and dependencies?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',1)">Yes, fully documented</button><button class="q-opt" onclick="answer(this,'partial',1)">Partially documented</button><button class="q-opt" onclick="answer(this,'no',1)">No documentation</button></div></div>
+    <div class="q-card"><div class="q-text">2. Are your applications predominantly stateless (can run on any server without local state)?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',2)">Yes, mostly stateless</button><button class="q-opt" onclick="answer(this,'partial',2)">Mixed stateless/stateful</button><button class="q-opt" onclick="answer(this,'no',2)">Mostly stateful/monolithic</button></div></div>
+    <div class="q-card"><div class="q-text">3. Does your network have sufficient internet bandwidth to support cloud connectivity?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',3)">Yes, assessed and sufficient</button><button class="q-opt" onclick="answer(this,'partial',3)">Partially — needs upgrade</button><button class="q-opt" onclick="answer(this,'no',3)">No assessment done</button></div></div>
+    <div class="q-card"><div class="q-text">4. Do you use Infrastructure as Code (IaC) tools such as Terraform, Ansible, or CloudFormation?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',4)">Yes, in production use</button><button class="q-opt" onclick="answer(this,'partial',4)">Experimenting / piloting</button><button class="q-opt" onclick="answer(this,'no',4)">No, fully manual</button></div></div>
+  </div>
+
+  <!-- CATEGORY 2 -->
+  <div class="category">
+    <div class="cat-title"><div class="cat-icon">🔒</div>Security & Compliance</div>
+    <div class="q-card"><div class="q-text">5. Has your organization defined data classification levels (public, internal, confidential, restricted)?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',5)">Yes, formally defined</button><button class="q-opt" onclick="answer(this,'partial',5)">Informally defined</button><button class="q-opt" onclick="answer(this,'no',5)">Not defined</button></div></div>
+    <div class="q-card"><div class="q-text">6. Are you subject to compliance regulations such as HIPAA, GDPR, PCI DSS, or SOC 2?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',6)">Yes, and we have controls mapped</button><button class="q-opt" onclick="answer(this,'partial',6)">Yes, but controls are incomplete</button><button class="q-opt" onclick="answer(this,'no',6)">Not subject to these regulations</button></div></div>
+    <div class="q-card"><div class="q-text">7. Is Multi-Factor Authentication (MFA) enforced for all privileged users?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',7)">Yes, 100% of privileged users</button><button class="q-opt" onclick="answer(this,'partial',7)">Partially enforced</button><button class="q-opt" onclick="answer(this,'no',7)">Not enforced</button></div></div>
+    <div class="q-card"><div class="q-text">8. Do you have an incident response plan for security breaches?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',8)">Yes, tested annually</button><button class="q-opt" onclick="answer(this,'partial',8)">Documented but untested</button><button class="q-opt" onclick="answer(this,'no',8)">No formal plan</button></div></div>
+  </div>
+
+  <!-- CATEGORY 3 -->
+  <div class="category">
+    <div class="cat-title"><div class="cat-icon">👥</div>Organizational Readiness</div>
+    <div class="q-card"><div class="q-text">9. Does your organization have executive sponsorship for the cloud initiative?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',9)">Yes, CIO/CTO actively sponsors</button><button class="q-opt" onclick="answer(this,'partial',9)">Some leadership support</button><button class="q-opt" onclick="answer(this,'no',9)">No executive sponsor</button></div></div>
+    <div class="q-card"><div class="q-text">10. Do your IT staff hold any cloud certifications (AWS, Azure, GCP)?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',10)">Yes, multiple certified staff</button><button class="q-opt" onclick="answer(this,'partial',10)">1-2 certified individuals</button><button class="q-opt" onclick="answer(this,'no',10)">No cloud certifications</button></div></div>
+    <div class="q-card"><div class="q-text">11. Is there a dedicated cloud program manager or cloud architect role in your organization?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',11)">Yes, dedicated role exists</button><button class="q-opt" onclick="answer(this,'partial',11)">Part-time / informal responsibility</button><button class="q-opt" onclick="answer(this,'no',11)">No dedicated cloud role</button></div></div>
+    <div class="q-card"><div class="q-text">12. Is there a formal change management process for IT changes?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',12)">Yes, formal ITIL/ITSM process</button><button class="q-opt" onclick="answer(this,'partial',12)">Informal process exists</button><button class="q-opt" onclick="answer(this,'no',12)">No change management</button></div></div>
+  </div>
+
+  <!-- CATEGORY 4 -->
+  <div class="category">
+    <div class="cat-title"><div class="cat-icon">💰</div>Financial & Governance</div>
+    <div class="q-card"><div class="q-text">13. Has a cloud budget been formally approved with contingency allocation?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',13)">Yes, approved with contingency</button><button class="q-opt" onclick="answer(this,'partial',13)">Budget under discussion</button><button class="q-opt" onclick="answer(this,'no',13)">No budget allocated</button></div></div>
+    <div class="q-card"><div class="q-text">14. Do you have a process for tracking and optimizing cloud costs (FinOps practices)?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',14)">Yes, FinOps team/process exists</button><button class="q-opt" onclick="answer(this,'partial',14)">Ad-hoc cost monitoring</button><button class="q-opt" onclick="answer(this,'no',14)">No cost governance</button></div></div>
+    <div class="q-card"><div class="q-text">15. Has your organization completed a Total Cost of Ownership (TCO) comparison of on-prem vs. cloud?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',15)">Yes, formal TCO analysis done</button><button class="q-opt" onclick="answer(this,'partial',15)">High-level estimate only</button><button class="q-opt" onclick="answer(this,'no',15)">No analysis done</button></div></div>
+    <div class="q-card"><div class="q-text">16. Are tagging standards and resource naming conventions defined for cloud resources?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',16)">Yes, enforced via policy</button><button class="q-opt" onclick="answer(this,'partial',16)">Defined but not enforced</button><button class="q-opt" onclick="answer(this,'no',16)">Not defined</button></div></div>
+  </div>
+
+  <!-- CATEGORY 5 -->
+  <div class="category">
+    <div class="cat-title"><div class="cat-icon">🔄</div>Operations & DevOps</div>
+    <div class="q-card"><div class="q-text">17. Does your team use CI/CD pipelines for application deployments?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',17)">Yes, automated CI/CD in production</button><button class="q-opt" onclick="answer(this,'partial',17)">Partially automated</button><button class="q-opt" onclick="answer(this,'no',17)">Fully manual deployments</button></div></div>
+    <div class="q-card"><div class="q-text">18. Is application and infrastructure monitoring (metrics, logs, alerts) in place?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',18)">Yes, comprehensive monitoring</button><button class="q-opt" onclick="answer(this,'partial',18)">Basic monitoring exists</button><button class="q-opt" onclick="answer(this,'no',18)">Minimal or no monitoring</button></div></div>
+    <div class="q-card"><div class="q-text">19. Does your organization have a documented Disaster Recovery (DR) plan with tested RTO/RPO?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',19)">Yes, tested annually</button><button class="q-opt" onclick="answer(this,'partial',19)">Documented but untested</button><button class="q-opt" onclick="answer(this,'no',19)">No DR plan</button></div></div>
+    <div class="q-card"><div class="q-text">20. Are containerization technologies (Docker, Kubernetes) used in your environment?</div><div class="q-options"><button class="q-opt" onclick="answer(this,'yes',20)">Yes, in production</button><button class="q-opt" onclick="answer(this,'partial',20)">Dev/test only or piloting</button><button class="q-opt" onclick="answer(this,'no',20)">Not used</button></div></div>
+  </div>
+
+  <div style="text-align:center;margin-bottom:2rem">
+    <button class="btn-primary" onclick="calcScore()">Calculate My Readiness Score →</button>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-wrap" id="resultWrap">
+    <div class="score-ring-wrap">
+      <svg width="160" height="160" viewBox="0 0 160 160">
+        <circle class="score-circle-bg" cx="80" cy="80" r="68"/>
+        <circle class="score-circle-fill" id="scoreCircle" cx="80" cy="80" r="68" stroke-dasharray="427" stroke-dashoffset="427"/>
+      </svg>
+      <div class="score-text">
+        <div class="score-num" id="scoreNum">0</div>
+        <div class="score-label">/ 100</div>
+      </div>
+    </div>
+    <div class="result-title" id="resultTitle">—</div>
+    <div class="result-desc" id="resultDesc">—</div>
+    <div class="result-breakdown" id="resultBreakdown"></div>
+    <div id="resultRecs" style="text-align:left;margin-top:1.5rem;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.4rem"></div>
+    <div>
+      <button class="btn-primary" onclick="resetQuiz()">Retake Assessment</button>
+      <a href="index.html" class="btn-outline">← Back to Overview</a>
+    </div>
+  </div>
+</div>
+
+<footer>Cloud Readiness Assessment &nbsp;·&nbsp; <a href="index.html">Project Overview</a> &nbsp;·&nbsp; <a href="calculator.html">Cost Calculator</a></footer>
+
+<script>
+const answers = {};
+const catNames = ['Technical Infrastructure','Security & Compliance','Organizational Readiness','Financial & Governance','Operations & DevOps'];
+const catQ = [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16],[17,18,19,20]];
+
+const darkToggle = document.getElementById('darkToggle');
+const saved = localStorage.getItem('theme');
+if(saved) document.documentElement.setAttribute('data-theme',saved);
+darkToggle.textContent = document.documentElement.getAttribute('data-theme')==='dark'?'☀️':'🌙';
+darkToggle.addEventListener('click',()=>{
+  const n = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',n);
+  localStorage.setItem('theme',n);
+  darkToggle.textContent = n==='dark'?'☀️':'🌙';
+});
+
+function answer(btn, val, qNum) {
+  const siblings = btn.parentElement.querySelectorAll('.q-opt');
+  siblings.forEach(b => b.classList.remove('selected-yes','selected-partial','selected-no'));
+  btn.classList.add('selected-'+val);
+  answers[qNum] = val;
+  updateProgress();
+}
+
+function updateProgress() {
+  const n = Object.keys(answers).length;
+  const pct = Math.round(n/20*100);
+  document.getElementById('progressLabel').textContent = `Question ${n} of 20 answered`;
+  document.getElementById('progressPct').textContent = pct+'%';
+  document.getElementById('progFill').style.width = pct+'%';
+}
+
+function calcScore() {
+  const unanswered = [];
+  for(let i=1;i<=20;i++) if(!answers[i]) unanswered.push(i);
+  if(unanswered.length > 0) {
+    alert(`Please answer all questions. Missing: Q${unanswered.join(', Q')}`);
+    return;
+  }
+  const pts = {yes:5, partial:2, no:0};
+  let total = 0;
+  catQ.forEach(qs => qs.forEach(q => { total += pts[answers[q]]||0; }));
+  const score = total; // max 100
+
+  const catScores = catQ.map(qs => {
+    const s = qs.reduce((a,q) => a+(pts[answers[q]]||0), 0);
+    return Math.round(s/20*100);
+  });
+
+  showResult(score, catScores);
+}
+
+function showResult(score, catScores) {
+  document.getElementById('resultWrap').style.display = 'block';
+  document.getElementById('resultWrap').scrollIntoView({behavior:'smooth', block:'center'});
+
+  // animate score
+  let n = 0;
+  const el = document.getElementById('scoreNum');
+  const t = setInterval(()=>{ if(n>=score){clearInterval(t);return;} el.textContent=++n; },18);
+
+  // ring
+  const circle = document.getElementById('scoreCircle');
+  const circumference = 427;
+  const offset = circumference - (score/100)*circumference;
+  setTimeout(()=>{ circle.style.strokeDashoffset = offset; },100);
+  circle.style.stroke = score>=70?'#22c55e':score>=40?'#f59e0b':'#ef4444';
+
+  // title & desc
+  let title, desc, recs;
+  if(score >= 70) {
+    title = '🟢 Cloud Ready';
+    desc = 'Your organization has strong foundations for cloud migration. You can proceed with a phased migration plan, starting with your pilot workloads.';
+    recs = ['<strong>Next Steps:</strong>','✅ Finalize cloud platform selection (AWS/Azure/GCP) based on your workload profile','✅ Stand up a cloud landing zone and begin pilot migration','✅ Establish a Cloud Center of Excellence (CCoE)','✅ Purchase Reserved Instances for baseline workloads to optimize costs'];
+  } else if(score >= 40) {
+    title = '🟡 Partially Ready';
+    desc = 'Your organization has made progress but has important gaps to address before a full migration. Focus on the areas with lower scores first.';
+    recs = ['<strong>Priority Actions:</strong>','⚠️ Complete infrastructure documentation and application dependency mapping','⚠️ Address security gaps (MFA, incident response, data classification)','⚠️ Secure executive sponsorship and formal cloud budget','⚠️ Invest in cloud certifications for 2–3 key IT staff','⚠️ Run a 4-week cloud pilot with a non-critical application'];
+  } else {
+    title = '🔴 Not Yet Ready';
+    desc = 'Significant preparation is needed before cloud migration. Use this assessment to prioritize a 3–6 month readiness improvement program.';
+    recs = ['<strong>Foundation Work Required:</strong>','❌ Conduct a full infrastructure audit and create application inventory','❌ Implement MFA and basic security controls immediately','❌ Engage executive leadership for cloud program sponsorship','❌ Develop a cloud skills training program for IT staff','❌ Engage a cloud consulting partner to assist with assessment and planning'];
+  }
+
+  document.getElementById('resultTitle').textContent = `${title} — Score: ${score}/100`;
+  document.getElementById('resultDesc').textContent = desc;
+  document.getElementById('resultRecs').innerHTML = '<p style="font-size:.85rem;font-weight:700;margin-bottom:.6rem">Recommendations</p>' + recs.map(r=>`<p style="font-size:.84rem;color:var(--muted);margin-bottom:.35rem">${r}</p>`).join('');
+
+  // breakdown
+  const bd = document.getElementById('resultBreakdown');
+  bd.innerHTML = catScores.map((s,i)=>`
+    <div class="breakdown-item">
+      <div class="b-label">${catNames[i]}</div>
+      <div class="b-score">${s}%</div>
+      <div class="b-bar"><div class="b-fill" style="width:${s}%;background:${s>=70?'#22c55e':s>=40?'#f59e0b':'#ef4444'}"></div></div>
+    </div>`).join('');
+}
+
+function resetQuiz() {
+  Object.keys(answers).forEach(k=>delete answers[k]);
+  document.querySelectorAll('.q-opt').forEach(b=>b.classList.remove('selected-yes','selected-partial','selected-no'));
+  updateProgress();
+  document.getElementById('resultWrap').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

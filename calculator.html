@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Cloud Cost Savings Calculator</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;--text:#1e2a3b;--muted:#6b7280;--border:#e5e7eb;--blue:#1a56db;--blue-lt:#ebf5ff;--green:#057a55;--green-lt:#f3faf7;--nav:#1e2a3b;--shadow:rgba(0,0,0,.07)}
+[data-theme="dark"]{--bg:#0f172a;--surface:#1e293b;--surface2:#0f172a;--text:#e2e8f0;--muted:#94a3b8;--border:#334155;--blue:#60a5fa;--blue-lt:rgba(96,165,250,.12);--green:#34d399;--green-lt:rgba(52,211,153,.1);--nav:#0f172a;--shadow:rgba(0,0,0,.3)}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.65}
+nav{background:var(--nav);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.nav-brand{color:#fff;font-weight:700;font-size:.95rem}.nav-brand span{color:#60a5fa}
+.nav-back{color:#cbd5e1;text-decoration:none;font-size:.85rem}.nav-back:hover{color:#fff}
+#darkToggle{background:none;border:none;cursor:pointer;color:#e2e8f0;font-size:1.1rem;padding:.25rem .5rem}
+
+.hero{background:linear-gradient(135deg,#0f172a,#1e3a5f,#1a56db);color:#fff;text-align:center;padding:3.5rem 1.5rem 3rem}
+.hero h1{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;margin-bottom:.6rem}
+.hero p{color:#93c5fd;font-size:.95rem;max-width:560px;margin:0 auto}
+
+.wrap{max-width:1000px;margin:0 auto;padding:3rem 1.5rem}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:2rem}
+@media(max-width:700px){.grid-2{grid-template-columns:1fr}}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.8rem;box-shadow:0 1px 4px var(--shadow)}
+.card h3{font-size:1rem;font-weight:700;margin-bottom:1.2rem;color:var(--text)}
+
+.form-group{margin-bottom:1.2rem}
+.form-group label{display:block;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.4rem}
+.form-group .hint{font-size:.75rem;color:var(--muted);margin-bottom:.4rem}
+.form-group input,.form-group select{width:100%;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;background:var(--bg);color:var(--text);transition:border-color .2s}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--blue)}
+.input-prefix{position:relative}
+.input-prefix span{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem}
+.input-prefix input{padding-left:1.8rem}
+
+.range-wrap{display:flex;align-items:center;gap:.8rem}
+.range-wrap input[type=range]{flex:1;accent-color:var(--blue)}
+.range-val{min-width:3rem;text-align:right;font-weight:700;color:var(--blue);font-size:.9rem}
+
+.btn-calc{width:100%;background:var(--blue);color:#fff;border:none;padding:.8rem;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:.5rem}
+.btn-calc:hover{opacity:.88}
+.btn-reset{width:100%;background:transparent;color:var(--muted);border:1.5px solid var(--border);padding:.65rem;border-radius:10px;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:.6rem}
+.btn-reset:hover{border-color:var(--blue);color:var(--blue)}
+
+.results-section{margin-top:2.5rem;display:none}
+.results-section.visible{display:block;animation:fadeUp .4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.3rem;text-align:center;box-shadow:0 1px 4px var(--shadow)}
+.stat-card.highlight{background:linear-gradient(135deg,#1e429f,#1a56db);color:#fff;border-color:transparent}
+.stat-card.highlight .stat-label,.stat-card.highlight .stat-note{color:rgba(255,255,255,.75)}
+.stat-val{font-size:1.8rem;font-weight:800;color:var(--blue);line-height:1}
+.stat-card.highlight .stat-val{color:#fff}
+.stat-label{font-size:.78rem;color:var(--muted);margin-top:.3rem}
+.stat-note{font-size:.72rem;color:var(--muted);margin-top:.15rem}
+
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem}
+@media(max-width:700px){.chart-grid{grid-template-columns:1fr}}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.4rem;box-shadow:0 1px 4px var(--shadow)}
+.chart-card h4{font-size:.9rem;font-weight:700;margin-bottom:1rem}
+.chart-wrap{position:relative;height:240px}
+
+.breakdown-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.breakdown-table th{background:var(--nav);color:#fff;padding:.65rem 1rem;text-align:left;font-size:.78rem}
+.breakdown-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);color:var(--text)}
+.breakdown-table tr:last-child td{border-bottom:none;font-weight:700}
+.breakdown-table tr:nth-child(even) td{background:var(--bg)}
+.green{color:var(--green);font-weight:700}
+.red{color:#dc2626;font-weight:700}
+
+.tip-box{background:var(--green-lt);border:1px solid var(--green);border-radius:10px;padding:1rem 1.2rem;margin-top:1.5rem}
+.tip-box h4{font-size:.88rem;font-weight:700;color:var(--green);margin-bottom:.5rem}
+.tip-box ul{list-style:none}
+.tip-box li{font-size:.83rem;color:var(--text);padding:.2rem 0;display:flex;gap:.5rem}
+.tip-box li::before{content:"💡";flex-shrink:0}
+
+footer{background:var(--nav);color:#94a3b8;text-align:center;padding:1.5rem;font-size:.82rem;margin-top:2rem}
+footer a{color:#60a5fa;text-decoration:none}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand">☁️ <span>Cloud Cost</span> Calculator</div>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <a href="index.html" class="nav-back">← Back to Overview</a>
+    <button id="darkToggle">🌙</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>💰 Cloud Cost Savings Calculator</h1>
+  <p>Enter your current on-premises IT spend to estimate your cloud savings with reserved instances, right-sizing, and FinOps optimization.</p>
+</div>
+
+<div class="wrap">
+  <div class="grid-2">
+    <!-- INPUTS -->
+    <div class="card">
+      <h3>📋 Your Current On-Premises Costs</h3>
+
+      <div class="form-group">
+        <label>Monthly Server / Compute Costs</label>
+        <div class="hint">Hardware lease, maintenance, power, cooling for servers</div>
+        <div class="input-prefix"><span>$</span><input type="number" id="iCompute" value="15000" min="0"/></div>
+      </div>
+      <div class="form-group">
+        <label>Monthly Storage Costs</label>
+        <div class="hint">SAN, NAS, backup storage, tape</div>
+        <div class="input-prefix"><span>$</span><input type="number" id="iStorage" value="5000" min="0"/></div>
+      </div>
+      <div class="form-group">
+        <label>Monthly Network / Bandwidth Costs</label>
+        <div class="hint">ISP, WAN circuits, CDN, load balancers</div>
+        <div class="input-prefix"><span>$</span><input type="number" id="iNetwork" value="3000" min="0"/></div>
+      </div>
+      <div class="form-group">
+        <label>Monthly Data Center / Colocation Costs</label>
+        <div class="hint">Rack space, power, physical security</div>
+        <div class="input-prefix"><span>$</span><input type="number" id="iDC" value="8000" min="0"/></div>
+      </div>
+      <div class="form-group">
+        <label>Monthly IT Staff Costs (infrastructure ops)</label>
+        <div class="hint">Salary allocation for sysadmins, network engineers managing infra</div>
+        <div class="input-prefix"><span>$</span><input type="number" id="iStaff" value="20000" min="0"/></div>
+      </div>
+      <div class="form-group">
+        <label>Monthly Software / Licensing Costs</label>
+        <div class="hint">OS licenses, middleware, monitoring tools</div>
+        <div class="input-prefix"><span>$</span><input type="number" id="iLicense" value="4000" min="0"/></div>
+      </div>
+
+      <h3 style="margin-top:1.5rem;margin-bottom:1rem">⚙️ Cloud Strategy Settings</h3>
+
+      <div class="form-group">
+        <label>Cloud Provider</label>
+        <select id="iProvider">
+          <option value="aws">Amazon Web Services (AWS)</option>
+          <option value="azure">Microsoft Azure</option>
+          <option value="gcp">Google Cloud Platform (GCP)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Reserved Instance Coverage: <span id="riLabel">70%</span></label>
+        <div class="hint">% of compute on 1-year reserved instances (saves ~40%)</div>
+        <div class="range-wrap"><input type="range" id="iRI" min="0" max="100" value="70" oninput="document.getElementById('riLabel').textContent=this.value+'%'"/></div>
+      </div>
+      <div class="form-group">
+        <label>Spot / Preemptible Usage: <span id="spotLabel">20%</span></label>
+        <div class="hint">% of compute on spot instances (saves ~80%)</div>
+        <div class="range-wrap"><input type="range" id="iSpot" min="0" max="50" value="20" oninput="document.getElementById('spotLabel').textContent=this.value+'%'"/></div>
+      </div>
+      <div class="form-group">
+        <label>Right-Sizing Savings: <span id="rsLabel">15%</span></label>
+        <div class="hint">Estimated savings from removing over-provisioned resources</div>
+        <div class="range-wrap"><input type="range" id="iRS" min="0" max="40" value="15" oninput="document.getElementById('rsLabel').textContent=this.value+'%'"/></div>
+      </div>
+      <div class="form-group">
+        <label>Migration Timeline</label>
+        <select id="iTimeline">
+          <option value="6">6 months</option>
+          <option value="12" selected>12 months</option>
+          <option value="18">18 months</option>
+          <option value="24">24 months</option>
+        </select>
+      </div>
+
+      <button class="btn-calc" onclick="calculate()">Calculate Cloud Savings →</button>
+      <button class="btn-reset" onclick="resetCalc()">Reset to Defaults</button>
+    </div>
+
+    <!-- SUMMARY PANEL -->
+    <div>
+      <div class="card" style="margin-bottom:1.5rem">
+        <h3>💡 How It Works</h3>
+        <p style="font-size:.84rem;color:var(--muted);margin-bottom:.8rem">This calculator models three cloud cost scenarios based on your inputs and industry-average savings benchmarks:</p>
+        <div style="display:flex;flex-direction:column;gap:.6rem">
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem">
+            <div style="font-size:.82rem;font-weight:700;margin-bottom:.2rem">🟠 On-Demand Only</div>
+            <div style="font-size:.78rem;color:var(--muted)">Pure pay-as-you-go with no commitment. Highest flexibility, highest cost. Typical savings: 10–20% vs on-prem.</div>
+          </div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem">
+            <div style="font-size:.82rem;font-weight:700;margin-bottom:.2rem">🔵 Optimized Cloud (Recommended)</div>
+            <div style="font-size:.78rem;color:var(--muted)">Reserved instances + right-sizing + spot usage. The balanced approach. Typical savings: 30–45%.</div>
+          </div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem">
+            <div style="font-size:.82rem;font-weight:700;margin-bottom:.2rem">🟢 FinOps Optimized</div>
+            <div style="font-size:.78rem;color:var(--muted)">All of the above + 3-year reserved, idle resource cleanup, storage tiering. Maximum savings: 45–60%.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📌 Cloud Pricing Benchmarks</h3>
+        <table style="width:100%;font-size:.8rem;border-collapse:collapse">
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem 0;color:var(--muted)">On-Demand Compute</td><td style="text-align:right;font-weight:600">Baseline (0% savings)</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem 0;color:var(--muted)">1-Year Reserved Instance</td><td style="text-align:right;font-weight:600;color:var(--green)">~40% savings</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem 0;color:var(--muted)">3-Year Reserved Instance</td><td style="text-align:right;font-weight:600;color:var(--green)">~62% savings</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem 0;color:var(--muted)">Spot / Preemptible</td><td style="text-align:right;font-weight:600;color:var(--green)">~80% savings</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem 0;color:var(--muted)">Storage (SAN → Object)</td><td style="text-align:right;font-weight:600;color:var(--green)">~80% savings</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem 0;color:var(--muted)">Data Center → Cloud DC</td><td style="text-align:right;font-weight:600;color:var(--green)">~60% savings</td></tr>
+          <tr><td style="padding:.4rem 0;color:var(--muted)">Staff (ops automation)</td><td style="text-align:right;font-weight:600;color:var(--green)">~30% reallocation</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-section" id="resultsSection">
+    <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:1.5rem">📊 Your Cloud Savings Estimate</h2>
+
+    <div class="stat-grid" id="statGrid"></div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h4>Monthly Cost Comparison</h4>
+        <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h4>3-Year Cumulative Savings</h4>
+        <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>💵 Detailed Cost Breakdown</h3>
+      <div style="overflow-x:auto">
+        <table class="breakdown-table" id="breakdownTable"></table>
+      </div>
+    </div>
+
+    <div class="tip-box" id="tipBox"></div>
+  </div>
+</div>
+
+<footer>Cloud Cost Calculator &nbsp;·&nbsp; <a href="index.html">Project Overview</a> &nbsp;·&nbsp; <a href="readiness.html">Readiness Assessment</a></footer>
+
+<script>
+const darkToggle = document.getElementById('darkToggle');
+const saved = localStorage.getItem('theme');
+if(saved) document.documentElement.setAttribute('data-theme',saved);
+darkToggle.textContent = document.documentElement.getAttribute('data-theme')==='dark'?'☀️':'🌙';
+darkToggle.addEventListener('click',()=>{
+  const n = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',n);
+  localStorage.setItem('theme',n);
+  darkToggle.textContent = n==='dark'?'☀️':'🌙';
+  if(window._charts) updateCharts();
+});
+
+let _charts = {};
+
+function fmt(n){return '$'+Math.round(n).toLocaleString();}
+function fmtK(n){return n>=1000000?'$'+(n/1000000).toFixed(1)+'M':'$'+(n/1000).toFixed(0)+'K';}
+
+function calculate(){
+  const compute  = +document.getElementById('iCompute').value||0;
+  const storage  = +document.getElementById('iStorage').value||0;
+  const network  = +document.getElementById('iNetwork').value||0;
+  const dc       = +document.getElementById('iDC').value||0;
+  const staff    = +document.getElementById('iStaff').value||0;
+  const license  = +document.getElementById('iLicense').value||0;
+  const ri       = +document.getElementById('iRI').value/100;
+  const spot     = +document.getElementById('iSpot').value/100;
+  const rs       = +document.getElementById('iRS').value/100;
+  const months   = +document.getElementById('iTimeline').value;
+  const provider = document.getElementById('iProvider').value;
+
+  const onPremTotal = compute+storage+network+dc+staff+license;
+
+  // Provider-specific adjustment (minor)
+  const provFactor = {aws:1.00, azure:0.97, gcp:0.95}[provider];
+
+  // On-demand cloud (15% savings on compute/storage, DC eliminated, staff -20%)
+  const cloudCompute_OD = compute * 0.85 * provFactor;
+  const cloudStorage_OD = storage * 0.25 * provFactor; // object storage much cheaper
+  const cloudNetwork_OD = network * 0.90 * provFactor;
+  const cloudDC_OD      = dc * 0.05; // nearly zero (small egress/support)
+  const cloudStaff_OD   = staff * 0.85;
+  const cloudLicense_OD = license * 0.80;
+  const onDemandTotal   = cloudCompute_OD+cloudStorage_OD+cloudNetwork_OD+cloudDC_OD+cloudStaff_OD+cloudLicense_OD;
+
+  // Optimized cloud (RI + spot + right-sizing)
+  const riSavings   = ri * 0.40;
+  const spotSavings = spot * 0.80;
+  const mixFactor   = 1 - riSavings - spotSavings*(1-ri) - rs;
+  const cloudCompute_Opt = cloudCompute_OD * Math.max(mixFactor, 0.20);
+  const cloudStorage_Opt = storage * 0.20 * provFactor;
+  const cloudNetwork_Opt = network * 0.80 * provFactor;
+  const cloudDC_Opt      = dc * 0.03;
+  const cloudStaff_Opt   = staff * 0.75;
+  const cloudLicense_Opt = license * 0.70;
+  const optimizedTotal   = cloudCompute_Opt+cloudStorage_Opt+cloudNetwork_Opt+cloudDC_Opt+cloudStaff_Opt+cloudLicense_Opt;
+
+  // FinOps optimized (3yr RI, storage tiering, full automation)
+  const cloudCompute_FO  = cloudCompute_OD * Math.max(mixFactor * 0.75, 0.15);
+  const cloudStorage_FO  = storage * 0.15 * provFactor;
+  const cloudNetwork_FO  = network * 0.70 * provFactor;
+  const cloudDC_FO       = dc * 0.02;
+  const cloudStaff_FO    = staff * 0.65;
+  const cloudLicense_FO  = license * 0.60;
+  const finopsTotal      = cloudCompute_FO+cloudStorage_FO+cloudNetwork_FO+cloudDC_FO+cloudStaff_FO+cloudLicense_FO;
+
+  const savOD  = onPremTotal - onDemandTotal;
+  const savOpt = onPremTotal - optimizedTotal;
+  const savFO  = onPremTotal - finopsTotal;
+
+  const pctOD  = (savOD/onPremTotal*100).toFixed(1);
+  const pctOpt = (savOpt/onPremTotal*100).toFixed(1);
+  const pctFO  = (savFO/onPremTotal*100).toFixed(1);
+
+  // 3-year totals (migration cost ~3 months of on-prem)
+  const migrationCost = onPremTotal * 1.5;
+  const yr3OnPrem = onPremTotal * 36;
+  const yr3Opt    = optimizedTotal * 36 + migrationCost;
+  const yr3FO     = finopsTotal * 36 + migrationCost;
+  const yr3SaveOpt = yr3OnPrem - yr3Opt;
+  const yr3SaveFO  = yr3OnPrem - yr3FO;
+
+  // Render stats
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-val">${fmt(onPremTotal)}</div><div class="stat-label">Current Monthly Spend</div><div class="stat-note">On-premises total</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#f59e0b">${fmt(onDemandTotal)}</div><div class="stat-label">On-Demand Cloud</div><div class="stat-note">${pctOD}% savings (${fmt(savOD)}/mo)</div></div>
+    <div class="stat-card highlight"><div class="stat-val">${fmt(optimizedTotal)}</div><div class="stat-label">Optimized Cloud ⭐</div><div class="stat-note">${pctOpt}% savings (${fmt(savOpt)}/mo)</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--green)">${fmt(finopsTotal)}</div><div class="stat-label">FinOps Optimized</div><div class="stat-note">${pctFO}% savings (${fmt(savFO)}/mo)</div></div>
+    <div class="stat-card"><div class="stat-val">${fmtK(yr3SaveOpt)}</div><div class="stat-label">3-Year Net Savings (Optimized)</div><div class="stat-note">After migration costs</div></div>
+    <div class="stat-card"><div class="stat-val">${fmtK(yr3SaveFO)}</div><div class="stat-label">3-Year Net Savings (FinOps)</div><div class="stat-note">After migration costs</div></div>
+  `;
+
+  // Breakdown table
+  const rows = [
+    ['Compute / Servers', compute, cloudCompute_OD, cloudCompute_Opt, cloudCompute_FO],
+    ['Storage', storage, cloudStorage_OD, cloudStorage_Opt, cloudStorage_FO],
+    ['Network / Bandwidth', network, cloudNetwork_OD, cloudNetwork_Opt, cloudNetwork_FO],
+    ['Data Center / Colo', dc, cloudDC_OD, cloudDC_Opt, cloudDC_FO],
+    ['IT Staff (Ops)', staff, cloudStaff_OD, cloudStaff_Opt, cloudStaff_FO],
+    ['Software Licensing', license, cloudLicense_OD, cloudLicense_Opt, cloudLicense_FO],
+    ['TOTAL', onPremTotal, onDemandTotal, optimizedTotal, finopsTotal],
+  ];
+  document.getElementById('breakdownTable').innerHTML =
+    `<thead><tr><th>Cost Category</th><th>On-Premises</th><th>On-Demand Cloud</th><th>Optimized ⭐</th><th>FinOps Max</th></tr></thead><tbody>`+
+    rows.map((r,i)=>{
+      const last = i===rows.length-1;
+      return `<tr>${r.map((v,j)=> j===0
+        ? `<td${last?' style="font-weight:700"':''}>${v}</td>`
+        : `<td class="${last?(j===1?'red':'green'):''}">${fmt(v)}</td>`).join('')}</tr>`;
+    }).join('')+'</tbody>';
+
+  // Charts
+  const tc = getTextColor(), gc = getGridColor();
+  if(_charts.bar) _charts.bar.destroy();
+  if(_charts.line) _charts.line.destroy();
+
+  const barCtx = document.getElementById('barChart').getContext('2d');
+  _charts.bar = new Chart(barCtx,{
+    type:'bar',
+    data:{
+      labels:['On-Premises','On-Demand','Optimized','FinOps Max'],
+      datasets:[{
+        label:'Monthly Cost',
+        data:[onPremTotal,onDemandTotal,optimizedTotal,finopsTotal],
+        backgroundColor:['#94a3b8','#f59e0b','#1a56db','#22c55e'],
+        borderRadius:6
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${fmt(c.parsed.y)}/mo`}}},
+      scales:{
+        y:{ticks:{color:tc,callback:v=>'$'+v.toLocaleString()},grid:{color:gc}},
+        x:{ticks:{color:tc},grid:{display:false}}
+      }
+    }
+  });
+
+  // 3-year cumulative line chart
+  const labels3y = Array.from({length:37},(_,i)=>i===0?'Now':`M${i}`);
+  const onPremLine = labels3y.map((_,i)=> onPremTotal*i);
+  const optLine    = labels3y.map((_,i)=> i===0?0: migrationCost + optimizedTotal*i);
+  const foLine     = labels3y.map((_,i)=> i===0?0: migrationCost + finopsTotal*i);
+
+  const lineCtx = document.getElementById('lineChart').getContext('2d');
+  _charts.line = new Chart(lineCtx,{
+    type:'line',
+    data:{
+      labels:labels3y.filter((_,i)=>i%6===0),
+      datasets:[
+        {label:'On-Premises',data:onPremLine.filter((_,i)=>i%6===0),borderColor:'#94a3b8',pointRadius:3,tension:.4,fill:false},
+        {label:'Optimized Cloud',data:optLine.filter((_,i)=>i%6===0),borderColor:'#1a56db',pointRadius:3,tension:.4,fill:false},
+        {label:'FinOps Max',data:foLine.filter((_,i)=>i%6===0),borderColor:'#22c55e',pointRadius:3,tension:.4,fill:false},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:tc,font:{size:11}}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmtK(c.parsed.y)}`}}},
+      scales:{
+        y:{ticks:{color:tc,callback:v=>fmtK(v)},grid:{color:gc}},
+        x:{ticks:{color:tc},grid:{display:false}}
+      }
+    }
+  });
+
+  // Tips
+  const provName = {aws:'AWS',azure:'Microsoft Azure',gcp:'Google Cloud'}[provider];
+  document.getElementById('tipBox').innerHTML = `
+    <h4>💡 Top Optimization Tips for ${provName}</h4>
+    <ul>
+      <li>Purchase 1-year Reserved Instances for ${Math.round(ri*100)}% of your compute baseline — saves ~40% vs on-demand. Saves you ${fmt(compute*ri*0.40*provFactor)}/month on compute alone.</li>
+      <li>Enable storage lifecycle policies to auto-tier cold data to archive storage (${provider==='aws'?'S3 Glacier':provider==='azure'?'Azure Cool/Archive Blob':'GCS Nearline/Coldline'}) at 80–95% lower cost.</li>
+      <li>Right-size over-provisioned instances using ${provider==='aws'?'AWS Compute Optimizer':provider==='azure'?'Azure Advisor':'GCP Active Assist'} — your ${rs*100}% right-sizing target saves ${fmt(compute*rs*provFactor)}/month.</li>
+      <li>Use Spot/Preemptible instances for ${Math.round(spot*100)}% of batch jobs, CI/CD, and dev/test workloads — up to 80% savings on those workloads.</li>
+      <li>Eliminate idle resources weekly — unattached volumes, stopped instances, orphaned snapshots typically account for 15–20% of cloud bills.</li>
+    </ul>`;
+
+  document.getElementById('resultsSection').classList.add('visible');
+  document.getElementById('resultsSection').scrollIntoView({behavior:'smooth',block:'start'});
+  window._charts = _charts;
+}
+
+function resetCalc(){
+  document.getElementById('iCompute').value=15000;
+  document.getElementById('iStorage').value=5000;
+  document.getElementById('iNetwork').value=3000;
+  document.getElementById('iDC').value=8000;
+  document.getElementById('iStaff').value=20000;
+  document.getElementById('iLicense').value=4000;
+  document.getElementById('iRI').value=70; document.getElementById('riLabel').textContent='70%';
+  document.getElementById('iSpot').value=20; document.getElementById('spotLabel').textContent='20%';
+  document.getElementById('iRS').value=15; document.getElementById('rsLabel').textContent='15%';
+  document.getElementById('iTimeline').value=12;
+  document.getElementById('iProvider').value='aws';
+  document.getElementById('resultsSection').classList.remove('visible');
+}
+
+function getTextColor(){return document.documentElement.getAttribute('data-theme')==='dark'?'#94a3b8':'#6b7280'}
+function getGridColor(){return document.documentElement.getAttribute('data-theme')==='dark'?'#334155':'#e5e7eb'}
+function updateCharts(){Object.values(_charts).forEach(c=>{if(c.options.scales)Object.values(c.options.scales).forEach(s=>{if(s.ticks)s.ticks.color=getTextColor();if(s.grid)s.grid.color=getGridColor()});if(c.options.plugins?.legend?.labels)c.options.plugins.legend.labels.color=getTextColor();c.update()})}
+</script>
+</body>
+</html>

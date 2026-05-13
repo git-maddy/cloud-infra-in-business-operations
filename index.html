@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Cloud Infrastructure – Project Overview</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;--text:#1e2a3b;--muted:#6b7280;
+  --border:#e5e7eb;--blue:#1a56db;--blue-dk:#1e429f;--blue-lt:#ebf5ff;
+  --green:#057a55;--green-lt:#f3faf7;--slate:#1e2a3b;--shadow:rgba(0,0,0,.07);
+  --nav-bg:#1e2a3b;--hero-from:#0f172a;--hero-to:#1a56db;
+  --card-hover:rgba(0,0,0,.09);
+}
+[data-theme="dark"]{
+  --bg:#0f172a;--surface:#1e293b;--surface2:#0f172a;--text:#e2e8f0;--muted:#94a3b8;
+  --border:#334155;--blue:#60a5fa;--blue-dk:#93c5fd;--blue-lt:rgba(96,165,250,.12);
+  --green:#34d399;--green-lt:rgba(52,211,153,.1);--slate:#e2e8f0;--shadow:rgba(0,0,0,.3);
+  --nav-bg:#0f172a;--hero-from:#020617;--hero-to:#1e3a5f;
+  --card-hover:rgba(255,255,255,.05);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;transition:background .3s,color .3s}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:200;background:var(--nav-bg);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.nav-brand{color:#fff;font-weight:700;font-size:.95rem;display:flex;align-items:center;gap:.5rem}
+.nav-brand span{color:#60a5fa}
+.nav-links{display:flex;gap:1.4rem;list-style:none;align-items:center}
+.nav-links a{color:#cbd5e1;text-decoration:none;font-size:.82rem;transition:color .2s}
+.nav-links a:hover{color:#fff}
+.nav-tools{display:flex;gap:.6rem;align-items:center}
+.btn-tool{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#e2e8f0;
+  padding:.3rem .75rem;border-radius:6px;font-size:.78rem;cursor:pointer;text-decoration:none;
+  transition:background .2s;white-space:nowrap}
+.btn-tool:hover{background:rgba(255,255,255,.2)}
+#darkToggle{font-size:1.1rem;background:none;border:none;cursor:pointer;color:#e2e8f0;padding:.25rem .5rem}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--hero-from) 0%,#1e3a5f 60%,var(--hero-to) 100%);color:#fff;text-align:center;padding:5rem 1.5rem 4rem}
+.hero-badge{display:inline-block;margin-bottom:1.2rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:.3rem 1rem;font-size:.78rem;letter-spacing:1px;text-transform:uppercase}
+.hero h1{font-size:clamp(1.7rem,4vw,2.8rem);font-weight:800;line-height:1.2;max-width:820px;margin:0 auto .9rem}
+.hero p{font-size:1.05rem;color:#93c5fd;max-width:600px;margin:0 auto 2.5rem}
+.hero-meta{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;font-size:.85rem;color:#bfdbfe}
+
+/* SECTION */
+.section{padding:4rem 1.5rem;max-width:1100px;margin:0 auto}
+.section-title{font-size:1.5rem;font-weight:700;color:var(--text);margin-bottom:.4rem}
+.section-sub{color:var(--muted);margin-bottom:2.5rem;font-size:.95rem}
+.divider{border:none;border-top:2px solid var(--border);margin:.5rem 0 2.5rem}
+.bg-alt{background:var(--surface2)}
+
+/* SCROLL REVEAL */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}
+.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}
+
+/* MILESTONE TRACKER */
+.tracker-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;box-shadow:0 1px 4px var(--shadow);margin-bottom:0}
+.tracker-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem}
+.tracker-header h3{font-size:1rem;font-weight:700}
+.tracker-pct{font-size:1.5rem;font-weight:800;color:var(--blue)}
+.progress-bar-bg{background:var(--border);border-radius:999px;height:10px;overflow:hidden;margin-bottom:1.5rem}
+.progress-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#1a56db,#22c55e);transition:width 1.2s ease}
+.ms-checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.7rem}
+.ms-check{display:flex;align-items:center;gap:.75rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:.7rem 1rem}
+.ms-check .chk{width:22px;height:22px;border-radius:50%;background:#22c55e;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem;flex-shrink:0}
+.ms-check span{font-size:.85rem;font-weight:500}
+
+/* OBJECTIVES */
+.obj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:1.2rem}
+.obj-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.4rem 1.6rem;display:flex;gap:1rem;align-items:flex-start;box-shadow:0 1px 4px var(--shadow);transition:box-shadow .2s,transform .2s}
+.obj-card:hover{box-shadow:0 6px 20px var(--card-hover);transform:translateY(-2px)}
+.obj-icon{width:40px;height:40px;border-radius:10px;background:var(--blue-lt);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0}
+.obj-card h4{font-size:.92rem;font-weight:600;margin-bottom:.3rem}
+.obj-card p{font-size:.83rem;color:var(--muted)}
+
+/* MILESTONES */
+.milestones{display:flex;flex-direction:column;gap:1.5rem}
+.ms-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 1px 4px var(--shadow);display:grid;grid-template-columns:220px 1fr}
+.ms-left{background:linear-gradient(160deg,var(--blue-dk),var(--blue));color:#fff;padding:1.8rem 1.5rem;display:flex;flex-direction:column;justify-content:center}
+.ms-num{font-size:.72rem;letter-spacing:1.5px;text-transform:uppercase;opacity:.7;margin-bottom:.4rem}
+.ms-left h3{font-size:1rem;font-weight:700;line-height:1.3}
+.ms-badge{display:inline-block;margin-top:.8rem;background:rgba(255,255,255,.2);border-radius:999px;padding:.2rem .75rem;font-size:.72rem}
+.ms-right{padding:1.6rem 2rem}
+.ms-right p{font-size:.88rem;color:var(--text);margin-bottom:1rem}
+.ms-tags{display:flex;flex-wrap:wrap;gap:.5rem}
+.tag{background:var(--blue-lt);color:var(--blue-dk);border-radius:6px;padding:.2rem .65rem;font-size:.75rem;font-weight:500}
+
+/* PLATFORM TABS */
+.tab-nav{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.tab-btn{padding:.55rem 1.4rem;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tab-content{display:none}
+.tab-content.active{display:grid;grid-template-columns:1fr 1fr;gap:2rem;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.platform-detail{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.8rem;box-shadow:0 1px 4px var(--shadow)}
+.platform-detail h3{font-size:1.05rem;font-weight:700;margin-bottom:.3rem}
+.platform-detail .share{font-size:.8rem;color:var(--muted);margin-bottom:.8rem}
+.platform-detail p{font-size:.85rem;color:var(--text);margin-bottom:1rem}
+.detail-list{list-style:none}
+.detail-list li{font-size:.82rem;color:var(--text);padding:.22rem 0;display:flex;gap:.5rem}
+.detail-list li::before{content:"▸";color:var(--blue);flex-shrink:0}
+.strength-box{background:var(--green-lt);color:var(--green);border-radius:8px;padding:.5rem .8rem;font-size:.8rem;font-weight:500;margin-top:.8rem}
+.platform-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.8rem}
+.info-pill{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.5rem .8rem;font-size:.78rem;text-align:center}
+.info-pill strong{display:block;color:var(--blue);font-size:.85rem}
+
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;box-shadow:0 1px 4px var(--shadow)}
+.chart-card h4{font-size:.95rem;font-weight:700;margin-bottom:1rem;color:var(--text)}
+.chart-wrap{position:relative;height:260px}
+
+/* METRICS */
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1rem}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.4rem 1.2rem;text-align:center;box-shadow:0 1px 4px var(--shadow)}
+.metric-value{font-size:2rem;font-weight:800;color:var(--blue);line-height:1}
+.metric-label{font-size:.8rem;color:var(--muted);margin-top:.4rem}
+.metric-note{font-size:.75rem;color:#9ca3af;margin-top:.2rem}
+
+/* RECOMMENDATIONS */
+.rec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.2rem}
+.rec-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.4rem;box-shadow:0 1px 4px var(--shadow);display:flex;gap:1rem}
+.rec-num{width:34px;height:34px;border-radius:50%;background:var(--blue);color:#fff;font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rec-card h4{font-size:.9rem;font-weight:600;margin-bottom:.3rem}
+.rec-card p{font-size:.82rem;color:var(--muted)}
+
+/* ROADMAP */
+.roadmap{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.q-card{padding:1.6rem;border-right:1px solid var(--border);background:var(--surface)}
+.q-card:last-child{border-right:none}
+.q-card:nth-child(even){background:var(--bg)}
+.q-label{font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;color:var(--blue);margin-bottom:.6rem}
+.q-card h4{font-size:.95rem;font-weight:700;margin-bottom:.7rem}
+.q-card ul{list-style:none}
+.q-card li{font-size:.82rem;color:var(--muted);padding:.25rem 0;display:flex;gap:.4rem}
+.q-card li::before{content:"→";color:var(--blue);font-weight:700;flex-shrink:0}
+
+/* CASE STUDIES */
+.cs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.4rem}
+.cs-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 1px 4px var(--shadow);transition:box-shadow .2s,transform .2s}
+.cs-card:hover{box-shadow:0 8px 24px var(--card-hover);transform:translateY(-3px)}
+.cs-header{padding:1.4rem 1.6rem;color:#fff}
+.cs-netflix{background:linear-gradient(135deg,#141414,#e50914)}
+.cs-capital{background:linear-gradient(135deg,#004977,#d4002a)}
+.cs-unilever{background:linear-gradient(135deg,#003087,#1f36c7)}
+.cs-header h3{font-size:1.1rem;font-weight:800;margin-bottom:.2rem}
+.cs-header p{font-size:.8rem;opacity:.8}
+.cs-body{padding:1.4rem 1.6rem}
+.cs-stat{display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.83rem}
+.cs-stat:last-of-type{border-bottom:none}
+.cs-stat .label{color:var(--muted)}
+.cs-stat .value{font-weight:700;color:var(--blue)}
+
+/* FAQ */
+.faq-list{display:flex;flex-direction:column;gap:.8rem}
+.faq-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px var(--shadow)}
+.faq-q{padding:1.1rem 1.4rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-weight:600;font-size:.92rem;user-select:none}
+.faq-q:hover{background:var(--bg)}
+.faq-icon{color:var(--blue);font-size:1.1rem;transition:transform .3s;flex-shrink:0}
+.faq-item.open .faq-icon{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s}
+.faq-item.open .faq-a{max-height:300px}
+.faq-a p{padding:.2rem 1.4rem 1.2rem;font-size:.87rem;color:var(--muted);line-height:1.7}
+
+/* REFERENCES */
+.ref-list{list-style:none;display:flex;flex-direction:column;gap:.6rem}
+.ref-list li{font-size:.84rem;color:var(--muted);padding:.6rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;display:flex;gap:.8rem}
+.ref-num{color:var(--blue);font-weight:700;flex-shrink:0;min-width:1.8rem}
+.ref-list a{color:var(--blue);text-decoration:none}
+.ref-list a:hover{text-decoration:underline}
+
+/* GLOSSARY TOOLTIP */
+.tip{border-bottom:1px dashed var(--blue);cursor:help;position:relative;color:inherit}
+.tip::after{content:attr(data-tip);position:absolute;bottom:130%;left:50%;transform:translateX(-50%);background:#1e2a3b;color:#fff;padding:.5rem .8rem;border-radius:8px;font-size:.75rem;line-height:1.5;white-space:normal;width:220px;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s;z-index:500;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.tip::before{content:'';position:absolute;bottom:120%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1e2a3b;opacity:0;transition:opacity .2s}
+.tip:hover::after,.tip:hover::before{opacity:1}
+
+/* IMPACT TABLE */
+.impact-table{width:100%;border-collapse:collapse;font-size:.88rem}
+.impact-table th{background:var(--slate);color:#fff;padding:.75rem 1rem;text-align:left;font-size:.8rem;font-weight:600}
+.impact-table td{padding:.7rem 1rem;border-bottom:1px solid var(--border);color:var(--text)}
+.impact-table tr:last-child td{border-bottom:none}
+.impact-table tr:nth-child(even) td{background:var(--bg)}
+.pill{display:inline-block;padding:.2rem .65rem;border-radius:999px;font-size:.75rem;font-weight:600}
+.pill-green{background:#d1fae5;color:#065f46}
+.pill-blue{background:#dbeafe;color:#1e40af}
+
+/* FOOTER */
+footer{background:var(--nav-bg);color:#94a3b8;text-align:center;padding:2rem 1rem;font-size:.82rem;margin-top:0}
+footer strong{color:#e2e8f0}
+footer .footer-links{display:flex;justify-content:center;gap:1.5rem;margin-top:.8rem;flex-wrap:wrap}
+footer .footer-links a{color:#60a5fa;text-decoration:none;font-size:.8rem}
+footer .footer-links a:hover{text-decoration:underline}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .ms-card{grid-template-columns:1fr}
+  .ms-left{padding:1.2rem}
+  .tab-content.active{grid-template-columns:1fr}
+  .q-card{border-right:none;border-bottom:1px solid var(--border)}
+  .q-card:last-child{border-bottom:none}
+  nav{padding:0 1rem}
+  .nav-links{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">☁️ <span>Cloud Infrastructure</span> &nbsp;·&nbsp; Project Overview</div>
+  <ul class="nav-links">
+    <li><a href="#tracker">Progress</a></li>
+    <li><a href="#milestones">Milestones</a></li>
+    <li><a href="#platforms">Platforms</a></li>
+    <li><a href="#charts">Analytics</a></li>
+    <li><a href="#recommendations">Strategy</a></li>
+    <li><a href="#casestudies">Case Studies</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="nav-tools">
+    <a href="readiness.html" class="btn-tool">☑ Readiness Check</a>
+    <a href="calculator.html" class="btn-tool">💰 Cost Calculator</a>
+    <a href="onepager.html" class="btn-tool">📄 One-Pager</a>
+    <button id="darkToggle" title="Toggle dark mode">🌙</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Professional IT Study · April 2026</div>
+  <h1>Implementation of Cloud-Based Infrastructure in Business Operations</h1>
+  <p>A comprehensive study by an Information Technology Engineer covering strategy, platforms, migration planning, and performance governance.</p>
+  <div class="hero-meta">
+    <span>📋 6 Milestones Complete</span>
+    <span>☁️ AWS · Azure · GCP</span>
+    <span>📊 7 Performance Metrics</span>
+    <span>🗺️ 12-Month Roadmap</span>
+    <span>📚 20 References</span>
+  </div>
+</section>
+
+<!-- MILESTONE TRACKER -->
+<div id="tracker" class="bg-alt" style="padding:1px 0">
+<div class="section">
+  <p class="section-title">Milestone Progress</p>
+  <p class="section-sub">All six project milestones successfully completed.</p>
+  <hr class="divider"/>
+  <div class="tracker-wrap reveal">
+    <div class="tracker-header">
+      <h3>Overall Completion</h3>
+      <div class="tracker-pct" id="pctDisplay">0%</div>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="ms-checks">
+      <div class="ms-check"><div class="chk">✓</div><span>Milestone 1 — Literature Review Completed</span></div>
+      <div class="ms-check"><div class="chk">✓</div><span>Milestone 2 — Use Cases Identified</span></div>
+      <div class="ms-check"><div class="chk">✓</div><span>Milestone 3 — Cloud Platforms Analyzed</span></div>
+      <div class="ms-check"><div class="chk">✓</div><span>Milestone 4 — Implementation Plan Developed</span></div>
+      <div class="ms-check"><div class="chk">✓</div><span>Milestone 5 — Performance Metrics Evaluated</span></div>
+      <div class="ms-check"><div class="chk">✓</div><span>Milestone 6 — Final Project Report Prepared</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- OBJECTIVES -->
+<div id="objectives">
+<div class="section">
+  <p class="section-title">Project Objectives</p>
+  <p class="section-sub">Five core goals driving this professional study.</p>
+  <hr class="divider"/>
+  <div class="obj-grid">
+    <div class="obj-card reveal reveal-delay-1"><div class="obj-icon">🔍</div><div><h4>Explore Cloud's Role</h4><p>Understand how <span class="tip" data-tip="Cloud computing: on-demand delivery of IT resources over the Internet with pay-as-you-go pricing.">cloud-based infrastructure</span> modernizes and streamlines business operations.</p></div></div>
+    <div class="obj-card reveal reveal-delay-2"><div class="obj-icon">🏗️</div><div><h4>Evaluate Key Components</h4><p>Assess deployment models (public, private, hybrid) and service models (<span class="tip" data-tip="IaaS: virtualized compute/storage/network. PaaS: managed development platform. SaaS: ready-to-use cloud apps.">IaaS, PaaS, SaaS</span>).</p></div></div>
+    <div class="obj-card reveal reveal-delay-3"><div class="obj-icon">📈</div><div><h4>Analyze Business Benefits</h4><p>Quantify how cloud enhances scalability, cost-efficiency, and agility across business functions.</p></div></div>
+    <div class="obj-card reveal reveal-delay-1"><div class="obj-icon">⚠️</div><div><h4>Identify Challenges</h4><p>Pinpoint technical and organizational barriers in implementing cloud infrastructure.</p></div></div>
+    <div class="obj-card reveal reveal-delay-2"><div class="obj-icon">🗺️</div><div><h4>Recommend a Roadmap</h4><p>Deliver a professional implementation blueprint for IT engineers and business decision-makers.</p></div></div>
+  </div>
+</div>
+</div>
+
+<!-- MILESTONES -->
+<div id="milestones" class="bg-alt" style="padding:1px 0">
+<div class="section">
+  <p class="section-title">Project Milestones</p>
+  <p class="section-sub">Six structured milestones covering the full lifecycle of cloud adoption.</p>
+  <hr class="divider"/>
+  <div class="milestones">
+    <div class="ms-card reveal">
+      <div class="ms-left"><div class="ms-num">Milestone 1</div><h3>Literature Review on Cloud Computing</h3><span class="ms-badge">✅ Completed</span></div>
+      <div class="ms-right"><p>Reviewed cloud computing fundamentals from mainframe origins to modern hyperscale. Covered the <span class="tip" data-tip="NIST SP 800-145: the authoritative US government definition of cloud computing, defining 5 characteristics, 3 service models, and 4 deployment models.">NIST SP 800-145</span> definition, five essential characteristics, service models (IaaS/PaaS/SaaS), and deployment models. Analyzed enabling technologies including virtualization, Kubernetes, SDN, and microservices.</p><div class="ms-tags"><span class="tag">NIST SP 800-145</span><span class="tag">IaaS / PaaS / SaaS</span><span class="tag">7Rs Framework</span><span class="tag">Containerization</span><span class="tag">Cloud-Native</span></div></div>
+    </div>
+    <div class="ms-card reveal">
+      <div class="ms-left"><div class="ms-num">Milestone 2</div><h3>Use Cases Across Business Domains</h3><span class="ms-badge">✅ Completed</span></div>
+      <div class="ms-right"><p>Identified high-value cloud use cases across 7 domains: HR (Workday), Finance (Oracle Cloud), Sales (Salesforce), IT/<span class="tip" data-tip="DevOps: a culture and set of practices combining software development and IT operations to shorten delivery cycles and improve reliability.">DevOps</span> (AWS CodePipeline), Supply Chain (SAP IBP), Healthcare (Azure Health APIs), and Education (Google Workspace). Each domain includes ROI and real-world examples.</p><div class="ms-tags"><span class="tag">HR & Payroll</span><span class="tag">Cloud ERP</span><span class="tag">CRM & Sales</span><span class="tag">DevOps CI/CD</span><span class="tag">Healthcare HIPAA</span><span class="tag">Education LMS</span></div></div>
+    </div>
+    <div class="ms-card reveal">
+      <div class="ms-left"><div class="ms-num">Milestone 3</div><h3>Cloud Platforms Analyzed</h3><span class="ms-badge">✅ Completed</span></div>
+      <div class="ms-right"><p>Deep-dive analysis of AWS (~32% market share), Microsoft Azure (~22%), and Google Cloud Platform (~11%). Compared 17 features including regions, compute, AI/ML, DevOps tools, pricing, and compliance. Produced a recommendation matrix mapping platform to business profile.</p><div class="ms-tags"><span class="tag">AWS</span><span class="tag">Microsoft Azure</span><span class="tag">Google Cloud</span><span class="tag">Pricing Models</span><span class="tag">Compliance</span></div></div>
+    </div>
+    <div class="ms-card reveal">
+      <div class="ms-left"><div class="ms-num">Milestone 4</div><h3>Implementation Plan Developed</h3><span class="ms-badge">✅ Completed</span></div>
+      <div class="ms-right"><p>Developed a 6-phase, 24-week migration plan: Assessment → Architecture → Pilot → Migration → Security → Optimization. Includes data migration strategies (AWS DMS, Azure Migrate), RACI matrix, and <span class="tip" data-tip="Zero Trust: security model that assumes no implicit trust — every access request is authenticated and authorized regardless of network location.">zero-trust</span> security architecture.</p><div class="ms-tags"><span class="tag">6-Phase Plan</span><span class="tag">Landing Zone</span><span class="tag">IAM Design</span><span class="tag">Wave Migration</span><span class="tag">Zero Trust</span><span class="tag">FinOps</span></div></div>
+    </div>
+    <div class="ms-card reveal">
+      <div class="ms-left"><div class="ms-num">Milestone 5</div><h3>Performance Metrics Evaluated</h3><span class="ms-badge">✅ Completed</span></div>
+      <div class="ms-right"><p>Defined 7 metric categories with benchmarks: Availability (99.99%), Latency (&lt;200ms), Scalability, Cost Optimization (&lt;5% idle waste), Security Compliance, <span class="tip" data-tip="DR: Disaster Recovery. RTO = Recovery Time Objective (max downtime). RPO = Recovery Point Objective (max data loss).">DR</span> (RTO &lt;1hr, RPO &lt;15min), and Developer Productivity (<span class="tip" data-tip="DORA Metrics: 4 key DevOps measures — Deployment Frequency, Lead Time, Change Failure Rate, and MTTR — developed by Google's DevOps Research & Assessment team.">DORA metrics</span>).</p><div class="ms-tags"><span class="tag">SLA 99.99%</span><span class="tag">DORA Metrics</span><span class="tag">RTO / RPO</span><span class="tag">FinOps KPIs</span><span class="tag">Security Score</span></div></div>
+    </div>
+    <div class="ms-card reveal">
+      <div class="ms-left"><div class="ms-num">Milestone 6</div><h3>Final Project Report Prepared</h3><span class="ms-badge">✅ Completed</span></div>
+      <div class="ms-right"><p>Synthesized all findings into a final report with business impact analysis, risk register (vendor lock-in, data sovereignty, skills gap), 7 strategic recommendations, a 12-month implementation roadmap, and conclusion. Includes 20 academic and industry references.</p><div class="ms-tags"><span class="tag">Business Impact</span><span class="tag">Risk Analysis</span><span class="tag">7 Recommendations</span><span class="tag">12-Month Roadmap</span><span class="tag">20 References</span></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- PLATFORM TABS -->
+<div id="platforms">
+<div class="section">
+  <p class="section-title">Cloud Platforms — Deep Dive</p>
+  <p class="section-sub">Select a platform to explore its services, strengths, and best-fit profiles.</p>
+  <hr class="divider"/>
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="showTab('aws',this)">🟧 Amazon Web Services</button>
+    <button class="tab-btn" onclick="showTab('azure',this)">🔷 Microsoft Azure</button>
+    <button class="tab-btn" onclick="showTab('gcp',this)">🟩 Google Cloud Platform</button>
+  </div>
+
+  <!-- AWS TAB -->
+  <div class="tab-content active reveal" id="tab-aws">
+    <div class="platform-detail">
+      <h3>Amazon Web Services (AWS)</h3>
+      <div class="share">~32% global market share · 33 regions · 105 Availability Zones · Founded 2006</div>
+      <p>World's most comprehensive cloud platform with 200+ fully featured services. Pioneered IaaS. Preferred for custom workloads, startups, and regulated government environments.</p>
+      <ul class="detail-list">
+        <li>Compute: EC2, Lambda (serverless), EKS (Kubernetes), Fargate</li>
+        <li>Storage: S3, EBS, EFS, Glacier (archival)</li>
+        <li>Database: RDS, Aurora, DynamoDB, Redshift</li>
+        <li>AI/ML: SageMaker, Bedrock, Rekognition, Comprehend</li>
+        <li>Security: IAM, GuardDuty, Security Hub, KMS</li>
+        <li>DevOps: CodePipeline, CodeBuild, CloudFormation, CDK</li>
+      </ul>
+      <div class="strength-box">⚡ Best for: Breadth of services, serverless, ecosystem depth, government</div>
+    </div>
+    <div class="platform-detail">
+      <h3>AWS — Key Facts</h3>
+      <div class="platform-info-grid">
+        <div class="info-pill"><strong>~32%</strong>Market Share</div>
+        <div class="info-pill"><strong>33</strong>Global Regions</div>
+        <div class="info-pill"><strong>200+</strong>Cloud Services</div>
+        <div class="info-pill"><strong>143+</strong>Compliance Certs</div>
+        <div class="info-pill"><strong>On-Demand</strong>Pricing Model</div>
+        <div class="info-pill"><strong>Up to 90%</strong>Spot Savings</div>
+      </div>
+      <p style="margin-top:1rem;font-size:.85rem;color:var(--muted)"><strong style="color:var(--text)">Strengths:</strong> Largest service catalog, biggest partner ecosystem, best serverless (Lambda), deepest compliance coverage, AWS Marketplace with 10,000+ listings.</p>
+      <p style="font-size:.85rem;color:var(--muted)"><strong style="color:var(--text)">Weaknesses:</strong> Pricing complexity (500+ dimensions), steeper learning curve, weaker native Microsoft tool integration.</p>
+    </div>
+  </div>
+
+  <!-- AZURE TAB -->
+  <div class="tab-content" id="tab-azure">
+    <div class="platform-detail">
+      <h3>Microsoft Azure</h3>
+      <div class="share">~22% global market share · 60+ regions · Deep Microsoft ecosystem integration</div>
+      <p>Dominant for enterprises invested in Microsoft stack. Seamless Active Directory, M365, and Teams integration. Azure Arc enables unified hybrid/multi-cloud management.</p>
+      <ul class="detail-list">
+        <li>Compute: Azure VMs, AKS, Azure Functions, Container Instances</li>
+        <li>Storage: Blob Storage, Azure Files, Data Lake Storage</li>
+        <li>Database: Azure SQL, Cosmos DB, Azure Synapse Analytics</li>
+        <li>AI/ML: Azure Machine Learning, Azure OpenAI Service, Cognitive Services</li>
+        <li>Security: Microsoft Sentinel (SIEM), Defender for Cloud, Key Vault</li>
+        <li>Identity: Azure Active Directory (Entra ID), PIM, B2C</li>
+      </ul>
+      <div class="strength-box">⚡ Best for: Microsoft enterprises, hybrid cloud, identity management, compliance</div>
+    </div>
+    <div class="platform-detail">
+      <h3>Azure — Key Facts</h3>
+      <div class="platform-info-grid">
+        <div class="info-pill"><strong>~22%</strong>Market Share</div>
+        <div class="info-pill"><strong>60+</strong>Global Regions</div>
+        <div class="info-pill"><strong>Azure Arc</strong>Hybrid Mgmt</div>
+        <div class="info-pill"><strong>90+</strong>Compliance Certs</div>
+        <div class="info-pill"><strong>Up to 85%</strong>Hybrid Benefit</div>
+        <div class="info-pill"><strong>M365 + Teams</strong>Integrated</div>
+      </div>
+      <p style="margin-top:1rem;font-size:.85rem;color:var(--muted)"><strong style="color:var(--text)">Strengths:</strong> Unmatched Microsoft ecosystem integration, Azure Hybrid Benefit (use existing licenses), best enterprise identity (Entra ID), Azure Arc for hybrid cloud.</p>
+      <p style="font-size:.85rem;color:var(--muted)"><strong style="color:var(--text)">Weaknesses:</strong> Inconsistent service naming, some services lag AWS in features, Active Directory dependency has caused major outages.</p>
+    </div>
+  </div>
+
+  <!-- GCP TAB -->
+  <div class="tab-content" id="tab-gcp">
+    <div class="platform-detail">
+      <h3>Google Cloud Platform (GCP)</h3>
+      <div class="share">~11% global market share · 40+ regions · Google's private global network backbone</div>
+      <p>Choice platform for data analytics, ML/AI, and Kubernetes-native workloads. Runs on Google's private infrastructure powering Search, YouTube, and Gmail. Best sustained use pricing.</p>
+      <ul class="detail-list">
+        <li>Compute: Compute Engine, GKE (most mature K8s), Cloud Run, Cloud Functions</li>
+        <li>Data: BigQuery (serverless analytics), Cloud Spanner, Bigtable, Firestore</li>
+        <li>AI/ML: Vertex AI, Gemini, AutoML, Document AI, Vision AI, TPUs</li>
+        <li>Analytics: Dataflow, Pub/Sub, Looker, Dataproc</li>
+        <li>Security: Cloud Armor (WAF/DDoS), Security Command Center, Chronicle</li>
+        <li>DevOps: Cloud Build, Artifact Registry, GKE Autopilot, Cloud Deploy</li>
+      </ul>
+      <div class="strength-box">⚡ Best for: Data analytics, AI/ML, Kubernetes, digital-native companies</div>
+    </div>
+    <div class="platform-detail">
+      <h3>GCP — Key Facts</h3>
+      <div class="platform-info-grid">
+        <div class="info-pill"><strong>~11%</strong>Market Share</div>
+        <div class="info-pill"><strong>40+</strong>Global Regions</div>
+        <div class="info-pill"><strong>BigQuery</strong>Serverless SQL</div>
+        <div class="info-pill"><strong>100+</strong>Compliance Certs</div>
+        <div class="info-pill"><strong>Auto SUD</strong>No commitment</div>
+        <div class="info-pill"><strong>TPUs</strong>AI Accelerators</div>
+      </div>
+      <p style="margin-top:1rem;font-size:.85rem;color:var(--muted)"><strong style="color:var(--text)">Strengths:</strong> Industry-leading BigQuery analytics, best Kubernetes (invented K8s), Vertex AI/Gemini for ML, private global backbone network, Sustained Use Discounts require no commitment.</p>
+      <p style="font-size:.85rem;color:var(--muted)"><strong style="color:var(--text)">Weaknesses:</strong> Smaller region footprint than AWS/Azure, historically weaker enterprise sales, smaller ISV ecosystem.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- CHARTS -->
+<div id="charts" class="bg-alt" style="padding:1px 0">
+<div class="section">
+  <p class="section-title">Analytics & Visualizations</p>
+  <p class="section-sub">Data-driven insights from the project research.</p>
+  <hr class="divider"/>
+  <div class="charts-grid">
+    <div class="chart-card reveal reveal-delay-1">
+      <h4>☁️ Cloud Market Share (2023)</h4>
+      <div class="chart-wrap"><canvas id="marketChart"></canvas></div>
+    </div>
+    <div class="chart-card reveal reveal-delay-2">
+      <h4>📊 On-Premises vs. Cloud Performance</h4>
+      <div class="chart-wrap"><canvas id="perfChart"></canvas></div>
+    </div>
+    <div class="chart-card reveal reveal-delay-3">
+      <h4>💡 Cost Savings by Cloud Strategy</h4>
+      <div class="chart-wrap"><canvas id="savingsChart"></canvas></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- METRICS -->
+<div id="metrics">
+<div class="section">
+  <p class="section-title">Key Performance Metrics</p>
+  <p class="section-sub">Target benchmarks for cloud infrastructure health across 7 categories.</p>
+  <hr class="divider"/>
+  <div class="metrics-grid">
+    <div class="metric-card reveal"><div class="metric-value">99.99%</div><div class="metric-label"><span class="tip" data-tip="SLA: Service Level Agreement — a contractual commitment by the cloud provider for minimum service uptime.">SLA</span> Availability Target</div><div class="metric-note">vs. 99.5% on-premises</div></div>
+    <div class="metric-card reveal reveal-delay-1"><div class="metric-value">20–40%</div><div class="metric-label"><span class="tip" data-tip="TCO: Total Cost of Ownership — all direct and indirect costs of owning and operating a system over its lifetime.">TCO</span> Cost Reduction</div><div class="metric-note">average across migrations</div></div>
+    <div class="metric-card reveal reveal-delay-2"><div class="metric-value">&lt;3 min</div><div class="metric-label">Auto-Scale Response</div><div class="metric-note">vs. weeks on-prem provisioning</div></div>
+    <div class="metric-card reveal"><div class="metric-value">&lt;1 hr</div><div class="metric-label">Tier-1 <span class="tip" data-tip="RTO: Recovery Time Objective — the maximum acceptable time to restore a system after a failure.">RTO</span> Target</div><div class="metric-note">vs. 8–72 hrs on-prem DR</div></div>
+    <div class="metric-card reveal reveal-delay-1"><div class="metric-value">10–30×</div><div class="metric-label">Deployment Frequency</div><div class="metric-note"><span class="tip" data-tip="DORA: DevOps Research & Assessment — Google's research program measuring software delivery performance.">DORA</span> elite performer</div></div>
+    <div class="metric-card reveal reveal-delay-2"><div class="metric-value">&lt;5%</div><div class="metric-label">Idle Resource Waste</div><div class="metric-note"><span class="tip" data-tip="FinOps: Financial Operations — the practice of bringing financial accountability to cloud spending through cross-functional collaboration.">FinOps</span> Foundation target</div></div>
+    <div class="metric-card reveal"><div class="metric-value">&gt;98%</div><div class="metric-label">Security Scan Pass Rate</div><div class="metric-note">Automated CSPM benchmark</div></div>
+    <div class="metric-card reveal reveal-delay-1"><div class="metric-value">95%</div><div class="metric-label">Faster Threat Detection</div><div class="metric-note">SIEM vs. manual detection</div></div>
+  </div>
+
+  <br/>
+  <p style="font-weight:600;margin-bottom:1rem;color:var(--text)">On-Premises vs. Cloud — Head-to-Head</p>
+  <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border)">
+    <table class="impact-table">
+      <thead><tr><th>Metric</th><th>On-Premises</th><th>Cloud (Post-Migration)</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>Availability</td><td>99.5%</td><td>99.99%</td><td><span class="pill pill-green">+43 hrs/yr saved</span></td></tr>
+        <tr><td>Provisioning Time</td><td>4–12 weeks</td><td>Minutes (IaC)</td><td><span class="pill pill-green">99% faster</span></td></tr>
+        <tr><td>Deployment Frequency</td><td>Monthly</td><td>Daily / on-demand</td><td><span class="pill pill-green">10–30× improvement</span></td></tr>
+        <tr><td>MTTR (Incidents)</td><td>4–8 hours</td><td>&lt;1 hour</td><td><span class="pill pill-green">75–90% reduction</span></td></tr>
+        <tr><td>Disaster Recovery (RTO)</td><td>8–72 hours</td><td>1–4 hours</td><td><span class="pill pill-green">85–95% better</span></td></tr>
+        <tr><td>Storage Cost (per TB/mo)</td><td>$50–100 (SAN)</td><td>$2–25 (cloud)</td><td><span class="pill pill-green">70–95% cheaper</span></td></tr>
+        <tr><td>Security Threat Detection</td><td>Days (manual)</td><td>Minutes (SIEM)</td><td><span class="pill pill-green">95% faster MTTD</span></td></tr>
+        <tr><td>Total Cost of Ownership</td><td>Baseline</td><td>20–40% lower</td><td><span class="pill pill-blue">Avg. 30% savings</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- RECOMMENDATIONS -->
+<div id="recommendations" class="bg-alt" style="padding:1px 0">
+<div class="section">
+  <p class="section-title">Strategic Recommendations</p>
+  <p class="section-sub">Seven evidence-based recommendations for IT engineers and business decision-makers.</p>
+  <hr class="divider"/>
+  <div class="rec-grid">
+    <div class="rec-card reveal"><div class="rec-num">1</div><div><h4>Cloud-First Policy</h4><p>All new workloads default to cloud. On-premises deployments require documented justification.</p></div></div>
+    <div class="rec-card reveal reveal-delay-1"><div class="rec-num">2</div><div><h4>Hybrid Cloud for Sensitive Data</h4><p>Use Azure Arc, AWS Outposts, or Google Anthos for regulated and latency-sensitive workloads.</p></div></div>
+    <div class="rec-card reveal reveal-delay-2"><div class="rec-num">3</div><div><h4>Invest in Cloud Certifications</h4><p>AWS SAA-C03, AZ-104, Google PDE, and <span class="tip" data-tip="FinOps Certified Practitioner: credential from the FinOps Foundation validating cloud cost management expertise.">FinOps Practitioner</span> for all IT staff.</p></div></div>
+    <div class="rec-card reveal"><div class="rec-num">4</div><div><h4>FinOps from Day One</h4><p>Tagging, budget alerts, weekly cost reviews, and reserved instance planning start on migration day.</p></div></div>
+    <div class="rec-card reveal reveal-delay-1"><div class="rec-num">5</div><div><h4>Establish a <span class="tip" data-tip="CCoE: Cloud Center of Excellence — a cross-functional team that governs cloud strategy, standards, and self-service capabilities across an organization.">Cloud CoE</span></h4><p>Governs standards, enables self-service provisioning, and drives organizational cloud adoption.</p></div></div>
+    <div class="rec-card reveal reveal-delay-2"><div class="rec-num">6</div><div><h4>Security as Non-Negotiable</h4><p><span class="tip" data-tip="CSPM: Cloud Security Posture Management — automated tools that continuously assess cloud environments for misconfigurations and compliance violations.">CSPM</span>, zero-trust, automated compliance, and MFA for all users — never traded for migration speed.</p></div></div>
+    <div class="rec-card reveal"><div class="rec-num">7</div><div><h4>Multi-Cloud Avoids Lock-in</h4><p>Use Kubernetes + Terraform for portability. A secondary cloud provider provides leverage and resilience.</p></div></div>
+  </div>
+</div>
+</div>
+
+<!-- ROADMAP -->
+<div id="roadmap">
+<div class="section">
+  <p class="section-title">12-Month Implementation Roadmap</p>
+  <p class="section-sub">A phased path from assessment to full cloud governance.</p>
+  <hr class="divider"/>
+  <div class="roadmap reveal">
+    <div class="q-card"><div class="q-label">Q1 · Months 1–3</div><h4>Assessment + Pilot</h4><ul><li>Infrastructure audit</li><li>Platform selection</li><li>Landing zone setup</li><li>Pilot migration (1–2 apps)</li><li>FinOps baseline established</li></ul></div>
+    <div class="q-card"><div class="q-label">Q2 · Months 4–6</div><h4>Core Migration Waves</h4><ul><li>Wave 1 & 2 migrations</li><li>CI/CD pipelines live</li><li>Cloud skills training</li><li>Weekly FinOps reviews</li><li>30–40% workloads in cloud</li></ul></div>
+    <div class="q-card"><div class="q-label">Q3 · Months 7–9</div><h4>Optimization + Security</h4><ul><li>Critical systems migrated</li><li>Security hardening</li><li>Right-sizing & reserved instances</li><li>DR testing completed</li><li>70–80% workloads migrated</li></ul></div>
+    <div class="q-card"><div class="q-label">Q4 · Months 10–12</div><h4>Full Governance + CCoE</h4><ul><li>100% workloads decided</li><li>CCoE fully operational</li><li>Compliance certifications</li><li>20%+ TCO reduction verified</li><li>Cloud-first policy published</li></ul></div>
+  </div>
+</div>
+</div>
+
+<!-- CASE STUDIES -->
+<div id="casestudies" class="bg-alt" style="padding:1px 0">
+<div class="section">
+  <p class="section-title">Real-World Case Studies</p>
+  <p class="section-sub">How industry leaders executed cloud migration and transformed their operations.</p>
+  <hr class="divider"/>
+  <div class="cs-grid">
+    <div class="cs-card reveal">
+      <div class="cs-header cs-netflix"><h3>Netflix</h3><p>Cloud-Native Streaming Giant · AWS</p></div>
+      <div class="cs-body">
+        <p style="font-size:.83rem;color:var(--muted);margin-bottom:.8rem">Netflix migrated entirely to AWS over 7 years (2008–2016), decommissioning all data centers. Today it streams to 260M+ subscribers in 190 countries from AWS infrastructure.</p>
+        <div class="cs-stat"><span class="label">Cloud Provider</span><span class="value">AWS (primary)</span></div>
+        <div class="cs-stat"><span class="label">Migration Duration</span><span class="value">7 years (phased)</span></div>
+        <div class="cs-stat"><span class="label">Infrastructure Cost</span><span class="value">~40% reduction</span></div>
+        <div class="cs-stat"><span class="label">Availability</span><span class="value">99.99%+</span></div>
+        <div class="cs-stat"><span class="label">Key Strategy</span><span class="value">Chaos Engineering (Chaos Monkey)</span></div>
+        <div class="cs-stat"><span class="label">Key Lesson</span><span class="value">Design for failure from day one</span></div>
+      </div>
+    </div>
+    <div class="cs-card reveal reveal-delay-1">
+      <div class="cs-header cs-capital"><h3>Capital One</h3><p>First Major US Bank to Go All-In on Cloud · AWS</p></div>
+      <div class="cs-body">
+        <p style="font-size:.83rem;color:var(--muted);margin-bottom:.8rem">Capital One closed its last data center in 2020, becoming the first major US bank to migrate entirely to cloud. They built a DevOps culture with thousands of engineers practicing cloud-native development.</p>
+        <div class="cs-stat"><span class="label">Cloud Provider</span><span class="value">AWS</span></div>
+        <div class="cs-stat"><span class="label">Data Centers Closed</span><span class="value">8 (all decommissioned)</span></div>
+        <div class="cs-stat"><span class="label">Provisioning Speed</span><span class="value">Weeks → Minutes</span></div>
+        <div class="cs-stat"><span class="label">Deployments/Day</span><span class="value">80+ (from monthly)</span></div>
+        <div class="cs-stat"><span class="label">Cost Savings</span><span class="value">~$150M annually</span></div>
+        <div class="cs-stat"><span class="label">Key Lesson</span><span class="value">Culture change is harder than technology</span></div>
+      </div>
+    </div>
+    <div class="cs-card reveal reveal-delay-2">
+      <div class="cs-header cs-unilever"><h3>Unilever</h3><p>Global FMCG Cloud Transformation · Azure + SAP</p></div>
+      <div class="cs-body">
+        <p style="font-size:.83rem;color:var(--muted);margin-bottom:.8rem">Unilever migrated its SAP ERP landscape to Azure, standardizing 300+ legal entities on a single cloud ERP platform. This enabled real-time global supply chain visibility and finance consolidation.</p>
+        <div class="cs-stat"><span class="label">Cloud Provider</span><span class="value">Microsoft Azure</span></div>
+        <div class="cs-stat"><span class="label">ERP Platform</span><span class="value">SAP S/4HANA on Azure</span></div>
+        <div class="cs-stat"><span class="label">Supply Chain Savings</span><span class="value">$400M+</span></div>
+        <div class="cs-stat"><span class="label">HR Cost Reduction</span><span class="value">35% (via Workday)</span></div>
+        <div class="cs-stat"><span class="label">Forecast Accuracy</span><span class="value">+25% improvement</span></div>
+        <div class="cs-stat"><span class="label">Key Lesson</span><span class="value">Standardize before migrating ERP</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- FAQ -->
+<div id="faq">
+<div class="section">
+  <p class="section-title">Frequently Asked Questions</p>
+  <p class="section-sub">Common questions from IT teams and business leaders about cloud adoption.</p>
+  <hr class="divider"/>
+  <div class="faq-list">
+    <div class="faq-item reveal">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>What is the first step for a company considering cloud migration?</span><span class="faq-icon">+</span></div>
+      <div class="faq-a"><p>The first step is a thorough <strong>infrastructure and application assessment</strong> — inventorying all existing systems, mapping inter-application dependencies, and classifying each application using the 7Rs framework (Retire, Retain, Rehost, Replatform, Repurchase, Refactor, Re-architect). Skipping this step is the #1 cause of cloud migration failures and cost overruns. Tools like AWS Application Discovery Service and Azure Migrate can automate much of this process.</p></div>
+    </div>
+    <div class="faq-item reveal reveal-delay-1">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>How do we choose between AWS, Azure, and GCP?</span><span class="faq-icon">+</span></div>
+      <div class="faq-a"><p>The decision depends on your existing technology stack and primary workload type. <strong>AWS</strong> is the default choice for maximum service breadth and ecosystem. <strong>Azure</strong> wins when you're deeply invested in Microsoft products (Active Directory, Office 365, SQL Server, .NET). <strong>GCP</strong> is the best choice for data analytics, AI/ML workloads, or Kubernetes-native applications. Most large enterprises end up in a multi-cloud model — start with one primary provider and add a secondary for specific workloads.</p></div>
+    </div>
+    <div class="faq-item reveal reveal-delay-2">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>Is cloud really cheaper than on-premises?</span><span class="faq-icon">+</span></div>
+      <div class="faq-a"><p>Yes — when managed properly. Organizations that implement cloud governance and FinOps practices typically achieve <strong>20–40% TCO reduction</strong> versus on-premises. However, organizations that migrate without governance often see costs <em>increase</em>. The key practices are: purchasing Reserved Instances (1–3 year commitments) for predictable workloads (35–72% savings), right-sizing over-provisioned instances, using Spot/Preemptible instances for batch workloads (up to 90% savings), and cleaning up idle resources weekly.</p></div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>How do we handle sensitive data and compliance in the cloud?</span><span class="faq-icon">+</span></div>
+      <div class="faq-a"><p>All major cloud providers (AWS, Azure, GCP) offer compliance-certified environments for HIPAA, SOC 2, PCI DSS, GDPR, ISO 27001, and FedRAMP. Key practices: (1) enable encryption at rest (AES-256) and in transit (TLS 1.2+) for all data; (2) use Customer-Managed Keys (CMK) for regulated data; (3) select cloud regions that satisfy data residency requirements; (4) obtain HIPAA Business Associate Agreements or GDPR Data Processing Agreements from your provider; (5) deploy Cloud Security Posture Management (CSPM) tools to continuously detect misconfigurations.</p></div>
+    </div>
+    <div class="faq-item reveal reveal-delay-1">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>What is a Cloud Center of Excellence (CCoE) and do we need one?</span><span class="faq-icon">+</span></div>
+      <div class="faq-a"><p>A CCoE is a cross-functional team (typically 5–10 people from IT, Security, Finance, and Business) that governs cloud strategy, sets standards, and enables adoption across the organization. Yes — enterprises beyond 50 cloud workloads almost always benefit from a CCoE. Without one, you get cloud sprawl (unmanaged accounts, inconsistent configurations), security gaps (different teams applying different security standards), and cost overruns (no visibility across the organization's cloud spend). A CCoE should be established within 90 days of the first production workload going live.</p></div>
+    </div>
+    <div class="faq-item reveal reveal-delay-2">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>How long does a typical cloud migration take?</span><span class="faq-icon">+</span></div>
+      <div class="faq-a"><p>This varies widely by scope. A pilot migration (1–2 non-critical apps) takes <strong>4–8 weeks</strong>. A full enterprise migration of 50–200 applications typically takes <strong>12–24 months</strong> using a phased wave approach. The phases are: Assessment (4 weeks) → Architecture (4 weeks) → Pilot (4 weeks) → Migration waves (12+ weeks) → Optimization (ongoing). The biggest time variables are: application complexity, data volumes, compliance requirements, and team skill levels. Organizations should never do a "big bang" migration — the wave approach dramatically reduces risk.</p></div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>What cloud certifications should IT engineers pursue first?</span><span class="faq-icon">+</span></div>
+      <div class="faq-a"><p>Start with a foundational cert to build vocabulary, then go role-specific: <strong>Foundations:</strong> AWS Cloud Practitioner (CLF-C02) or Microsoft AZ-900 (free study materials available) — suitable for all IT staff. <strong>Infrastructure engineers:</strong> AWS Solutions Architect Associate (SAA-C03) or AZ-104 (Azure Administrator). <strong>DevOps engineers:</strong> AWS DevOps Engineer Professional or AZ-400 (DevOps Engineer Expert). <strong>Data/AI engineers:</strong> Google Professional Data Engineer or AWS Data Analytics Specialty. <strong>Cost governance:</strong> FinOps Certified Practitioner (FinOps Foundation). Budget 2–3 months of study per certification for associate level.</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- REFERENCES -->
+<div id="references" class="bg-alt" style="padding:1px 0">
+<div class="section">
+  <p class="section-title">References & Further Reading</p>
+  <p class="section-sub">20 academic and industry sources underpinning this study.</p>
+  <hr class="divider"/>
+  <ul class="ref-list">
+    <li class="reveal"><span class="ref-num">1</span><span>Mell, P. & Grance, T. (2011). <em>The NIST Definition of Cloud Computing.</em> NIST Special Publication 800-145. <a href="https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf" target="_blank">nist.gov ↗</a></span></li>
+    <li class="reveal reveal-delay-1"><span class="ref-num">2</span><span>Armbrust, M. et al. (2010). A view of cloud computing. <em>Communications of the ACM</em>, 53(4), 50–58.</span></li>
+    <li class="reveal reveal-delay-2"><span class="ref-num">3</span><span>Buyya, R. et al. (2009). Cloud computing and emerging IT platforms. <em>Future Generation Computer Systems</em>, 25(6), 599–616.</span></li>
+    <li class="reveal"><span class="ref-num">4</span><span>Gartner Inc. (2023). <em>Gartner Forecasts Worldwide Public Cloud End-User Spending.</em> Gartner Press Release.</span></li>
+    <li class="reveal reveal-delay-1"><span class="ref-num">5</span><span>Gartner Inc. (2022). <em>Magic Quadrant for Cloud Infrastructure and Platform Services.</em> Gartner Research.</span></li>
+    <li class="reveal reveal-delay-2"><span class="ref-num">6</span><span>Amazon Web Services. (2023). <em>AWS Well-Architected Framework.</em> <a href="https://aws.amazon.com/architecture/well-architected/" target="_blank">aws.amazon.com ↗</a></span></li>
+    <li class="reveal"><span class="ref-num">7</span><span>Microsoft. (2023). <em>Azure Well-Architected Framework.</em> <a href="https://docs.microsoft.com/azure/architecture/framework/" target="_blank">docs.microsoft.com ↗</a></span></li>
+    <li class="reveal reveal-delay-1"><span class="ref-num">8</span><span>Google Cloud. (2023). <em>Google Cloud Architecture Framework.</em> <a href="https://cloud.google.com/architecture/framework" target="_blank">cloud.google.com ↗</a></span></li>
+    <li class="reveal reveal-delay-2"><span class="ref-num">9</span><span>Forsgren, N., Humble, J. & Kim, G. (2018). <em>Accelerate: The Science of Lean Software and DevOps.</em> IT Revolution Press.</span></li>
+    <li class="reveal"><span class="ref-num">10</span><span>Synergy Research Group. (2023). <em>Q3 2023 Cloud Market Share Report.</em> Synergy Research Group.</span></li>
+    <li class="reveal reveal-delay-1"><span class="ref-num">11</span><span>FinOps Foundation. (2023). <em>State of FinOps 2023.</em> <a href="https://data.finops.org" target="_blank">data.finops.org ↗</a></span></li>
+    <li class="reveal reveal-delay-2"><span class="ref-num">12</span><span>Cloud Native Computing Foundation. (2023). <em>CNCF Annual Survey 2023.</em> Linux Foundation.</span></li>
+    <li class="reveal"><span class="ref-num">13</span><span>McKinsey & Company. (2023). <em>Unlocking the full potential of cloud for enterprise IT.</em> McKinsey Digital.</span></li>
+    <li class="reveal reveal-delay-1"><span class="ref-num">14</span><span>Deloitte Insights. (2022). <em>Cloud migration: How to accelerate the journey to the cloud.</em> Deloitte Development LLC.</span></li>
+    <li class="reveal reveal-delay-2"><span class="ref-num">15</span><span>IDC. (2023). <em>Worldwide Cloud IT Infrastructure Tracker.</em> International Data Corporation.</span></li>
+    <li class="reveal"><span class="ref-num">16</span><span>ISACA. (2022). <em>Cloud Computing: Business Benefits with Security, Governance, and Assurance Perspectives.</em></span></li>
+    <li class="reveal reveal-delay-1"><span class="ref-num">17</span><span>ENISA. (2022). <em>Cloud Computing Risk Assessment.</em> European Union Agency for Cybersecurity.</span></li>
+    <li class="reveal reveal-delay-2"><span class="ref-num">18</span><span>Salesforce Inc. (2023). <em>Salesforce Customer Success Metrics Report.</em> Salesforce Research.</span></li>
+    <li class="reveal"><span class="ref-num">19</span><span>Workday Inc. (2022). <em>Unilever Customer Success Story.</em> Workday, Inc.</span></li>
+    <li class="reveal reveal-delay-1"><span class="ref-num">20</span><span>Dogan, F. & Dogan, S. (2022). Challenges and opportunities of cloud computing: A systematic review. <em>IEEE Access</em>, 10, 45218–45238.</span></li>
+  </ul>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>Implementation of Cloud-Based Infrastructure in Business Operations</strong><br/>
+  A Professional Study by an Information Technology Engineer &nbsp;·&nbsp; April 2026
+  <div class="footer-links">
+    <a href="index.html">Overview</a>
+    <a href="readiness.html">☑ Readiness Assessment</a>
+    <a href="calculator.html">💰 Cost Calculator</a>
+    <a href="onepager.html">📄 Executive One-Pager</a>
+  </div>
+</footer>
+
+<script>
+// ── DARK MODE ──
+const toggle = document.getElementById('darkToggle');
+const saved = localStorage.getItem('theme');
+if(saved) document.documentElement.setAttribute('data-theme', saved);
+toggle.textContent = document.documentElement.getAttribute('data-theme')==='dark' ? '☀️' : '🌙';
+toggle.addEventListener('click', () => {
+  const curr = document.documentElement.getAttribute('data-theme');
+  const next = curr === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+  toggle.textContent = next === 'dark' ? '☀️' : '🌙';
+  updateChartColors();
+});
+
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── PROGRESS BAR ──
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('progressFill').style.width = '100%';
+    let n = 0;
+    const el = document.getElementById('pctDisplay');
+    const t = setInterval(() => { if(n >= 100){ clearInterval(t); return; } el.textContent = ++n + '%'; }, 12);
+  }, 400);
+});
+
+// ── PLATFORM TABS ──
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── FAQ ──
+function toggleFaq(el) {
+  el.parentElement.classList.toggle('open');
+}
+
+// ── CHARTS ──
+let charts = {};
+function getTextColor() {
+  return document.documentElement.getAttribute('data-theme')==='dark' ? '#94a3b8' : '#6b7280';
+}
+function getGridColor() {
+  return document.documentElement.getAttribute('data-theme')==='dark' ? '#334155' : '#e5e7eb';
+}
+
+function initCharts() {
+  Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+
+  // Market Share Donut
+  const mc = document.getElementById('marketChart').getContext('2d');
+  charts.market = new Chart(mc, {
+    type: 'doughnut',
+    data: {
+      labels: ['AWS (~32%)', 'Azure (~22%)', 'GCP (~11%)', 'Others (~35%)'],
+      datasets: [{ data: [32,22,11,35],
+        backgroundColor: ['#FF9900','#0078D4','#4285F4','#94a3b8'],
+        borderWidth: 2, borderColor: document.documentElement.getAttribute('data-theme')==='dark' ? '#1e293b' : '#fff'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '65%',
+      plugins: {
+        legend: { position: 'bottom', labels: { color: getTextColor(), padding: 12, font: { size: 12 } } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}` } }
+      }
+    }
+  });
+
+  // Performance Bar Chart
+  const pc = document.getElementById('perfChart').getContext('2d');
+  charts.perf = new Chart(pc, {
+    type: 'bar',
+    data: {
+      labels: ['Availability', 'Provisioning', 'MTTR', 'DR Recovery', 'Deploy Freq'],
+      datasets: [
+        { label: 'On-Premises', data: [50,10,25,15,10], backgroundColor: '#f87171', borderRadius: 4 },
+        { label: 'Cloud', data: [99,99,85,90,95], backgroundColor: '#1a56db', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: { min:0, max:100, ticks: { color: getTextColor(), callback: v => v+'%' }, grid: { color: getGridColor() } },
+        x: { ticks: { color: getTextColor() }, grid: { display: false } }
+      },
+      plugins: { legend: { labels: { color: getTextColor() } }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}%` } } }
+    }
+  });
+
+  // Cost Savings Bar Chart
+  const sc = document.getElementById('savingsChart').getContext('2d');
+  charts.savings = new Chart(sc, {
+    type: 'bar',
+    data: {
+      labels: ['On-Demand', 'Reserved (1yr)', 'Reserved (3yr)', 'Spot/Preemptible'],
+      datasets: [{
+        label: 'Cost Savings vs On-Demand',
+        data: [0, 40, 62, 80],
+        backgroundColor: ['#94a3b8','#60a5fa','#1a56db','#22c55e'],
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      scales: {
+        x: { min:0, max:100, ticks: { color: getTextColor(), callback: v => v+'%' }, grid: { color: getGridColor() } },
+        y: { ticks: { color: getTextColor() }, grid: { display: false } }
+      },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` Savings: ${ctx.parsed.x}%` } } }
+    }
+  });
+}
+
+function updateChartColors() {
+  const tc = getTextColor(), gc = getGridColor();
+  Object.values(charts).forEach(c => {
+    if(c.options.scales){
+      Object.values(c.options.scales).forEach(s => {
+        if(s.ticks) s.ticks.color = tc;
+        if(s.grid) s.grid.color = gc;
+      });
+    }
+    if(c.options.plugins?.legend?.labels) c.options.plugins.legend.labels.color = tc;
+    c.update();
+  });
+}
+
+window.addEventListener('load', initCharts);
+</script>
+</body>
+</html>
