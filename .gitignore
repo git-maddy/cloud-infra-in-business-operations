@@ -1,0 +1,30 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors / IDE
+.vscode/
+.idea/
+
+# Claude Code workspace
+.claude/
+
+# Local-only MCA submission artefacts — kept out of the public site repo
+Cloud_Infrastructure_Project_Report.docx
+Cloud_Infrastructure_Presentation.pptx
+generate_report.py
+generate_pptx.py
+render_diagrams.py
+diagrams/
+screenshots/
+
+# Python build artefacts
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Temp
+*.tmp
+*.bak
+~$*

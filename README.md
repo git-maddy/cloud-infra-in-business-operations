@@ -9,11 +9,16 @@ Built as the implementation artefact for the MCA project
 
 ## Live site
 
-After deployment to GitHub Pages, the site is reachable at:
+The deployed site is reachable at:
 
-```
-https://<your-username>.github.io/<repo-name>/
-```
+**https://git-maddy.github.io/cloud-infra-in-business-operations/**
+
+| Page              | Direct link                                                                                  |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| Project Overview  | https://git-maddy.github.io/cloud-infra-in-business-operations/index.html                    |
+| Readiness         | https://git-maddy.github.io/cloud-infra-in-business-operations/readiness.html                |
+| Cost Calculator   | https://git-maddy.github.io/cloud-infra-in-business-operations/calculator.html               |
+| Executive 1-Pager | https://git-maddy.github.io/cloud-infra-in-business-operations/onepager.html                 |
 
 ## Pages
 
@@ -29,13 +34,6 @@ https://<your-username>.github.io/<repo-name>/
 - Plain HTML, CSS, and vanilla JavaScript (no build step)
 - Chart.js loaded from jsDelivr CDN
 - `localStorage` for client-side persistence
-
-## Project artefacts
-
-- `Cloud_Infrastructure_Project_Report.docx` — full MCA report (10 chapters)
-- `Cloud_Infrastructure_Presentation.pptx` — viva slide deck
-- `generate_report.py` — `python-docx` generator that builds the report
-- `generate_pptx.py` — `python-pptx` generator that builds the slides
 
 ## Local preview
 
